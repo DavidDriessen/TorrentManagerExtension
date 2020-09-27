@@ -14,10 +14,10 @@ export enum ServerType {
 }
 
 export interface AddTorrentOptions {
-  category?: string,
-  name?: string
-  automatic?: boolean
-  savePath?: string
+  category?: string;
+  name?: string;
+  automatic?: boolean;
+  savePath?: string;
 }
 
 export interface TorrentLink {

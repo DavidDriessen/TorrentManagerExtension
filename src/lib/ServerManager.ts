@@ -5,8 +5,14 @@ import TorrentServer, {
 } from "@/lib/abstract/TorrentServer";
 import { QbitTorrentServer } from "@/lib/serverTypes/qbitTorrentServer";
 
+export interface Notify {
+  downloading: boolean;
+  downloaded: boolean;
+}
+
 export class ServerManager {
   private servers: TorrentServer[] = [];
+  private notifications: Notify = {} as Notify;
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -19,6 +25,11 @@ export class ServerManager {
         }
       }
       this.update();
+    });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    browser.storage.sync.get("notify").then(({ notify }) => {
+      this.notifications = notify as Notify;
     });
   }
 
@@ -40,26 +51,28 @@ export class ServerManager {
 
   addServer(server: TorrentServer) {
     server.on(TorrentServerEvents.Downloading, event => {
-      browser.notifications.create("StateChanged", {
-        type: "basic",
-        iconUrl: "icons/48.png",
-        title: "Torrent is downloading",
-        message: event.data.name
-      });
+      if (this.notifications.downloading)
+        browser.notifications.create("StateChanged", {
+          type: "basic",
+          iconUrl: "icons/48.png",
+          title: "Torrent is downloading",
+          message: event.data.name
+        });
     });
     server.on(TorrentServerEvents.Downloaded, event => {
-      browser.notifications.create("StateChanged", {
-        type: "basic",
-        iconUrl: "icons/48.png",
-        title: "Torrent finished downloading",
-        message: event.data.name
-      });
+      if (this.notifications.downloaded)
+        browser.notifications.create("StateChanged", {
+          type: "basic",
+          iconUrl: "icons/48.png",
+          title: "Torrent finished downloading",
+          message: event.data.name
+        });
     });
     server.on(TorrentServerEvents.TorrentListChanged, () => {
-      browser.runtime.sendMessage(TorrentServerEvents.TorrentListChanged)
-          // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-          // @ts-ignore
-          .catch(()=>{});
+      browser.runtime
+        .sendMessage(TorrentServerEvents.TorrentListChanged)
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        .catch(() => {});
     });
     this.servers.push(server);
   }

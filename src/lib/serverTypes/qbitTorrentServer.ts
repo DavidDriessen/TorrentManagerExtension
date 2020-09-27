@@ -41,13 +41,14 @@ export class QbitTorrentServer extends TorrentServer {
               if (
                 this.torrents[hash].state != response.data.torrents[hash].state
               ) {
-                switch (response.data.torrents[hash].state) {
-                  case TorrentState.downloading:
-                    this.fire(
-                      TorrentServerEvents.Downloading,
-                      this.torrents[hash]
-                    );
-                    break;
+                if (
+                  response.data.torrents[hash].state ===
+                  TorrentState.downloading
+                ) {
+                  this.fire(
+                    TorrentServerEvents.Downloading,
+                    this.torrents[hash]
+                  );
                 }
               }
               if (
@@ -89,10 +90,7 @@ export class QbitTorrentServer extends TorrentServer {
       });
   }
 
-  addTorrent(
-    torrents: string | string[],
-    options: AddTorrentOptions
-  ) {
+  addTorrent(torrents: string | string[], options: AddTorrentOptions) {
     return new Promise((resolve, reject) => {
       if (typeof torrents == "string") torrents = [torrents];
       if (
@@ -102,12 +100,10 @@ export class QbitTorrentServer extends TorrentServer {
       ) {
         const data = new FormData();
         data.append("urls", torrents.join("\n"));
-        if (options.category)
-          data.append("category", options.category);
-        if (options.name)
-          data.append("rename", options.name);
+        if (options.category) data.append("category", options.category);
+        if (options.name) data.append("rename", options.name);
         data.append("autoTMM", (!!options.automatic).toString());
-        if(!options.automatic && options.savePath)
+        if (!options.automatic && options.savePath)
           data.append("savepath ", options.savePath);
         this.connection
           .post("/api/v2/torrents/add", data)

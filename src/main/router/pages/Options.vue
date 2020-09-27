@@ -8,7 +8,7 @@
       </v-toolbar>
       <v-card-text>
         <v-row>
-          <v-col md="5">
+          <v-col sm="12" md="6">
             <v-card height="200">
               <v-tabs background-color="primary" dark vertical>
                 <v-tab v-for="(link, key) in form.links" :key="key">
@@ -40,6 +40,33 @@
             </v-card>
           </v-col>
           <v-col>
+            <v-card height="200">
+              <v-toolbar color="primary" dark>
+                <v-toolbar-title>
+                  Notifications
+                </v-toolbar-title>
+              </v-toolbar>
+              <v-card-text>
+                <v-row>
+                  <v-col>
+                    <v-checkbox
+                      label="Downloading"
+                      v-model="form.notify.downloading"
+                    />
+                  </v-col>
+                  <v-col>
+                    <v-checkbox
+                      label="Finish downloadi"
+                      v-model="form.notify.downloaded"
+                    />
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+        <v-row justify="start">
+          <v-col sm="12" md="8">
             <v-card color="primary" dark>
               <v-card-title>Servers</v-card-title>
               <v-tabs background-color="primary" dark vertical>
@@ -131,12 +158,21 @@ import {
   ServerType,
   TorrentLink
 } from "@/lib/abstract/TorrentServer";
+import { Notify } from "@/lib/ServerManager";
 
 @Component
 export default class Options extends Vue {
-  form: { servers: ServerSettings[]; links: TorrentLink[] } = {
+  form: {
+    servers: ServerSettings[];
+    links: TorrentLink[];
+    notify: Notify;
+  } = {
     servers: [],
-    links: []
+    links: [],
+    notify: {
+      downloading: true,
+      downloaded: true
+    }
   };
   types: ServerType[] = [];
 
@@ -171,17 +207,24 @@ export default class Options extends Vue {
   deleteServer(server: ServerSettings) {
     this.form.servers = this.form.servers.filter(s => s !== server);
   }
+
   addLink() {
     this.form.links.push({ name: "Link", url: "" });
   }
-  deleteLink(link: Link) {
+
+  deleteLink(link: TorrentLink) {
     this.form.links = this.form.links.filter(l => l !== link);
   }
 
   save() {
-    const data: { servers: ServerSettings[]; links: Link[] } = {
+    const data: {
+      servers: ServerSettings[];
+      links: TorrentLink[];
+      notify: Notify;
+    } = {
       servers: [],
-      links: this.form.links
+      links: this.form.links,
+      notify: this.form.notify
     };
     data.servers = this.form.servers.map(s => {
       s.host = (s.host as URL).toString();
