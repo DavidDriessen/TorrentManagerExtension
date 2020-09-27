@@ -56,7 +56,7 @@ import { Torrent, TorrentState } from "@/lib/abstract/Torrent";
 @Component
 export default class QBitTorrentPopup extends Vue {
   get torrents() {
-    return this.$store.getters.torrents.filter((torrent: Torrent) => {
+    return this.$store.state.torrents.filter((torrent: Torrent) => {
       switch (torrent.state) {
         case TorrentState.metaDL:
         case TorrentState.checkingDL:

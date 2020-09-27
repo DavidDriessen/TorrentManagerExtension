@@ -41,8 +41,10 @@ export default class DeleteTorrentModal extends Vue {
   removeFiles = false;
 
   removeTorrent() {
+    this.loading = true;
     this.torrent.delete(this.removeFiles).finally(() => {
       this.dialog = false;
+      this.$emit("deleted");
     });
   }
 }

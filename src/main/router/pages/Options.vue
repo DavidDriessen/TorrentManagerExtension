@@ -54,25 +54,54 @@
                   <v-card flat>
                     <v-card-text>
                       <v-text-field label="Name" v-model="server.name" />
-                      <v-select
-                        label="Type"
-                        v-model="server.type"
-                        :items="types"
-                      />
-                      <v-text-field
-                        label="Host"
-                        v-model="server.host"
-                        :rules="[validURL]"
-                      />
-                      <v-text-field
-                        label="Username"
-                        v-model="server.username"
-                      />
-                      <v-text-field
-                        label="Password"
-                        v-model="server.password"
-                        type="password"
-                      />
+                      <v-row>
+                        <v-col>
+                          <v-select
+                            label="Type"
+                            v-model="server.type"
+                            :items="types"
+                          />
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col sm="4" cols="5" lg="3">
+                          <v-select
+                            label="Protocol"
+                            v-model="server.host.protocol"
+                            :items="[
+                              { text: 'HTTP', value: 'http:' },
+                              { text: 'HTTPS', value: 'https:' }
+                            ]"
+                          />
+                        </v-col>
+                        <v-col>
+                          <v-text-field
+                            label="Hostname"
+                            v-model="server.host.host"
+                          />
+                        </v-col>
+                        <v-col cols="3" lg="2">
+                          <v-text-field
+                            label="Port"
+                            v-model="server.host.port"
+                          />
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col>
+                          <v-text-field
+                            label="Username"
+                            v-model="server.username"
+                          />
+                        </v-col>
+                        <v-col>
+                          <v-text-field
+                            label="Password"
+                            v-model="server.password"
+                            type="password"
+                          />
+                        </v-col>
+                      </v-row>
                     </v-card-text>
                     <v-card-actions>
                       <v-spacer />
@@ -97,40 +126,34 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { ServerSettings, ServerType } from "@/lib/abstract/TorrentServer";
-
-interface Link {
-  name: string;
-  url: string;
-}
+import {
+  ServerSettings,
+  ServerType,
+  TorrentLink
+} from "@/lib/abstract/TorrentServer";
 
 @Component
 export default class Options extends Vue {
-  form: { servers: ServerSettings[]; links: Link[] } = {
+  form: { servers: ServerSettings[]; links: TorrentLink[] } = {
     servers: [],
     links: []
   };
   types: ServerType[] = [];
-
-  validURL(str: string) {
-    const pattern = new RegExp(
-      "^(https?:\\/\\/)" + // protocol
-      "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // domain name
-      "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR ip (v4) address
-      "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // port and path
-      "(\\?[;&a-z\\d%_.~+=-]*)?" + // query string
-        "(\\#[-a-z\\d_]*)?$",
-      "i"
-    ); // fragment locator
-    return pattern.test(str) || "Invalid url";
-  }
 
   mounted() {
     this.types = Object.values(ServerType);
     browser.storage.sync.get().then(data => {
       if (data.links && data.links.lenght > 0) this.form.links = data.links;
       else this.addLink();
-      if (data.servers) this.form.servers = data.servers;
+      if (data.servers)
+        this.form.servers = data.servers.map((s: ServerSettings) => {
+          try {
+            s.host = new URL(s.host as string);
+          } catch (e) {
+            s.host = new URL("http://example.com");
+          }
+          return s;
+        });
       else this.addServer();
     });
   }
@@ -138,12 +161,13 @@ export default class Options extends Vue {
   addServer() {
     this.form.servers.push({
       name: "Main",
-      host: "",
       type: ServerType.Qbit,
+      host: new URL("http://example.com"),
       username: "",
       password: ""
     });
   }
+
   deleteServer(server: ServerSettings) {
     this.form.servers = this.form.servers.filter(s => s !== server);
   }
@@ -155,7 +179,15 @@ export default class Options extends Vue {
   }
 
   save() {
-    browser.storage.sync.set(this.form).then(() => {
+    const data: { servers: ServerSettings[]; links: Link[] } = {
+      servers: [],
+      links: this.form.links
+    };
+    data.servers = this.form.servers.map(s => {
+      s.host = (s.host as URL).toString();
+      return s;
+    });
+    browser.storage.sync.set(data).then(() => {
       // Notify that we saved.
       alert("Settings saved");
       browser.runtime.reload();

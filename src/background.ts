@@ -7,7 +7,7 @@ browser.runtime.onMessage.addListener(request => {
     case "addTorrent":
       browser.tabs.create({
         url: browser.extension.getURL(
-          "index.html#/addServer/" + encodeURIComponent(request.torrent)
+          "index.html#/add/" + encodeURIComponent(request.torrent)
         )
       });
   }
@@ -28,7 +28,7 @@ browser.webRequest.onBeforeSendHeaders.addListener(
       requestHeaders: details.requestHeaders
     };
   },
-  { urls: ["*://*/api/v2/torrents/addServer"] },
+  { urls: ["*://*/api/v2/torrents/add"] },
   ["blocking", "requestHeaders", "extraHeaders"]
 );
 

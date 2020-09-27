@@ -1,7 +1,9 @@
 <template>
   <v-dialog width="800">
     <template v-slot:activator="{ on }">
-      <v-btn color="primary" dark v-on="on" text>Filter</v-btn>
+      <v-btn v-on="on" icon>
+        <v-icon>fas fa-filter</v-icon>
+      </v-btn>
     </template>
     <v-card class="mx-auto mt-5">
       <v-card-title>
@@ -16,7 +18,16 @@
               label="State"
               placeholder="State"
               multiple
-            />
+            >
+              <template v-slot:item="{ item }">
+                <v-list-item-icon>
+                  <TorrentState :state="item" />
+                </v-list-item-icon>
+                <v-list-item-title>
+                  {{ item }}
+                </v-list-item-title>
+              </template>
+            </v-autocomplete>
           </v-col>
           <v-col>
             <v-autocomplete
@@ -46,6 +57,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
+import TorrentStateComponent from "@/main/components/TorrentState.vue";
 import { TorrentState } from "@/lib/abstract/Torrent";
 
 export interface TorrentFilterType {
@@ -54,7 +66,9 @@ export interface TorrentFilterType {
   category: string[];
 }
 
-@Component
+@Component({
+  components: { TorrentState: TorrentStateComponent }
+})
 export default class TorrentFilter extends Vue {
   states = Object.values(TorrentState);
   filter: TorrentFilterType = {

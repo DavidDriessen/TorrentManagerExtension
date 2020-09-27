@@ -13,12 +13,51 @@ export enum ServerType {
   Qbit = "Qbit"
 }
 
+export interface AddTorrentOptions {
+  category?: string,
+  name?: string
+  automatic?: boolean
+  savePath?: string
+}
+
+export interface TorrentLink {
+  name: string;
+  url: string;
+}
+
 export interface ServerSettings {
   name: string;
   type: ServerType;
-  host: string;
+  host: URL | string;
   username: string;
   password: string;
+}
+
+export interface ServerState {
+  alltime_dl: number;
+  alltime_ul: number;
+  average_time_queue: number;
+  connection_status: string;
+  dht_nodes: number;
+  dl_info_data: number;
+  dl_info_speed: number;
+  dl_rate_limit: number;
+  free_space_on_disk: number;
+  global_ratio: string;
+  queued_io_jobs: number;
+  queueing: boolean;
+  read_cache_hits: string;
+  read_cache_overload: string;
+  refresh_interval: number;
+  total_buffers_size: number;
+  total_peer_connections: number;
+  total_queued_size: number;
+  total_wasted_session: number;
+  up_info_data: number;
+  up_info_speed: number;
+  up_rate_limit: number;
+  use_alt_speed_limits: boolean;
+  write_cache_overload: string;
 }
 
 export enum TorrentServerError {
@@ -31,7 +70,8 @@ export enum TorrentServerEvents {
   AuthError = "AuthError",
   ServerError = "ServerError",
   Downloading = "Downloading",
-  Downloaded = "Downloaded"
+  Downloaded = "Downloaded",
+  TorrentListChanged = "TorrentListChanged"
 }
 
 export interface Versions {
@@ -47,6 +87,7 @@ export interface Versions {
 export abstract class TorrentServer extends EventEmitter {
   readonly name: string;
   protected connection: AxiosInstance;
+  protected state: ServerState = {} as ServerState;
   protected torrents: { [key: string]: Torrent } = {};
   protected categories: {
     [key: string]: { name: string; savePath: string };
@@ -56,7 +97,7 @@ export abstract class TorrentServer extends EventEmitter {
   constructor(settings: ServerSettings) {
     super();
     this.name = settings.name;
-    this.connection = axios.create({ baseURL: settings.host });
+    this.connection = axios.create({ baseURL: settings.host as string });
     ConcurrencyManager(this.connection, 1000);
     this.connection.interceptors.response.use(
       response => {
@@ -90,7 +131,19 @@ export abstract class TorrentServer extends EventEmitter {
           if (this.errorCode != TorrentServerError.ServerError) {
             this.errorCode = TorrentServerError.ServerError;
             this.fire(TorrentServerEvents.ServerError, this);
-            if (!error.response) {
+            if (error.message == "Network Error") {
+              browser.notifications.create("AuthError", {
+                type: "basic",
+                iconUrl: "icons/48.png",
+                title: "SSL ERROR",
+                message: "Server: '" + this.name + "'."
+              });
+              return new Promise(resolve => {
+                setTimeout(resolve, 10 * 60 * 1000);
+              }).then(() => {
+                return this.connection.request(error.config);
+              });
+            } else if (!error.response) {
               browser.notifications.create("AuthError", {
                 type: "basic",
                 iconUrl: "icons/48.png",
@@ -117,11 +170,21 @@ export abstract class TorrentServer extends EventEmitter {
 
   abstract addTorrent(
     torrents: string | string[],
-    category: string,
-    name: string | undefined
+    options: AddTorrentOptions
   ): Promise<unknown>;
 
-  abstract deleteTorrent(hash: string, deleteFiles: boolean): Promise<unknown>;
+  abstract deleteTorrents(
+    hash: string[],
+    deleteFiles: boolean
+  ): Promise<unknown>;
+
+  abstract pauseTorrents(hash: string[]): Promise<unknown>;
+
+  abstract resumeTorrents(hash: string[]): Promise<unknown>;
+
+  getState() {
+    return this.state;
+  }
 
   getTorrents() {
     return Object.values(this.torrents);

@@ -13,7 +13,7 @@ const routes = [
     component: Torrents
   },
   {
-    path: "/addServer/:newTorrent",
+    path: "/add/:newTorrent",
     name: "AddTorrents",
     component: Torrents
   },

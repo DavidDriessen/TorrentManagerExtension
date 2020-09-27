@@ -130,7 +130,7 @@
       </v-card-subtitle>
       <v-card-actions>
         <v-spacer />
-        <delete-torrent-modal :torrent="torrent" />
+        <delete-torrent-modal :torrent="torrent" @deleted="close" />
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -144,7 +144,7 @@ import {
   TorrentFile,
   TorrentTracker
 } from "@/lib/abstract/Torrent";
-import DeleteTorrentModal from "@/components/DeleteTorrentModal.vue";
+import DeleteTorrentModal from "@/main/components/DeleteTorrentModal.vue";
 import moment from "moment";
 @Component({
   components: { DeleteTorrentModal }
@@ -177,17 +177,8 @@ export default class TorrentDetailsModal extends Vue {
     this.dialog = true;
   }
 
-  remove() {
-    this.loading = true;
-    this.torrent
-      .delete(true)
-      .then(() => {
-        this.dialog = false;
-        this.loading = false;
-      })
-      .catch(() => {
-        this.loading = false;
-      });
+  close() {
+    this.dialog = false;
   }
 }
 </script>

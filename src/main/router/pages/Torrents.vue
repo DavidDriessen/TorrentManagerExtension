@@ -22,7 +22,7 @@
       loading-text="Loading... Please wait"
       @click:row="select"
       show-select
-      item-key="hash"
+      item-key="key"
     >
       <template v-slot:progress>
         <v-progress-linear
@@ -45,10 +45,25 @@
             single-line
           />
           <v-spacer />
-          <v-btn @click="loadTrackers" :loading="loading" text>
-            Refresh Trackers
-          </v-btn>
           <TorrentFilter @filter="updateFilter"></TorrentFilter>
+          <v-menu offset-y left>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn icon v-bind="attrs" v-on="on">
+                <v-icon>fas fa-ellipsis-v</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item @click="load('trackers')" text>
+                <v-list-item-title>Load Trackers</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="action('pause')" text>
+                <v-list-item-title>Pause selected torrents</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="action('resume')" text>
+                <v-list-item-title>Resume selected torrents</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </v-toolbar>
       </template>
       <template v-slot:item.size="{ item }">
@@ -69,6 +84,9 @@
           >{{ +(item.progress * 100).toFixed(1) }}
         </v-progress-circular>
       </template>
+      <template v-slot:item.state="{ item }">
+        <TorrentState :state="item.state" />
+      </template>
       <template v-slot:no-data>
         No torrents received. Check if the credentials are correct.
       </template>
@@ -79,15 +97,21 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { Torrent, TorrentTracker } from "@/lib/abstract/Torrent";
+import {
+  Torrent,
+  TorrentFunctions,
+  TorrentTracker
+} from "@/lib/abstract/Torrent";
 import { AsyncFilterMixin } from "@tygr/vue-async-filter";
 import TorrentFilter, {
   TorrentFilterType
-} from "@/components/TorrentFilter.vue";
-import TorrentDetailsModal from "@/components/TorrentDetailsModal.vue";
+} from "@/main/components/TorrentFilter.vue";
+import TorrentDetailsModal from "@/main/components/TorrentDetailsModal.vue";
+import groupBy from "lodash/groupBy";
+import TorrentState from "@/main/components/TorrentState.vue";
 
 @Component({
-  components: { TorrentDetailsModal, TorrentFilter },
+  components: { TorrentState, TorrentDetailsModal, TorrentFilter },
   mixins: [AsyncFilterMixin]
 })
 export default class Torrents extends Vue {
@@ -100,7 +124,7 @@ export default class Torrents extends Vue {
   filter: TorrentFilterType = { state: [], tracker: [], category: [] };
 
   get torrents() {
-    return this.$store.getters.torrents
+    return this.$store.state.torrents
       .filter(
         (torrent: Torrent) =>
           this.filter.state.length === 0 ||
@@ -117,8 +141,12 @@ export default class Torrents extends Vue {
           (torrent.trackers &&
             torrent.trackers.some((tracker: TorrentTracker) => {
               return (
-                this.filter.tracker.some(f => tracker.url.indexOf(f) >= 0) ||
-                this.filter.tracker.some(f => tracker.msg.indexOf(f) >= 0)
+                this.filter.tracker.some(
+                  (f: string) => tracker.url.indexOf(f) >= 0
+                ) ||
+                this.filter.tracker.some(
+                  (f: string) => tracker.msg.indexOf(f) >= 0
+                )
               );
             }))
       );
@@ -157,19 +185,12 @@ export default class Torrents extends Vue {
     return true;
   }
 
-  loadDetails() {
-    this.allProgress("loadDetails");
-  }
-
-  loadTrackers() {
-    this.allProgress("loadTrackers");
-  }
-
-  allProgress(func: "loadTrackers" | "loadDetails") {
+  allProgress(func: TorrentFunctions, torrents: Torrent[]) {
     let d = 0;
     this.progress = 0;
     this.buffer = 0;
     this.loading = true;
+
     function chunkArray(array: Array<Torrent>, size: number) {
       const result = [];
       for (const value of array) {
@@ -185,13 +206,15 @@ export default class Torrents extends Vue {
 
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async resolve => {
-      for (const chunk of chunkArray(this.torrents, 10)) {
-        this.buffer += (chunk.length * 100) / this.torrents.length;
+      for (const chunk of chunkArray(torrents, 10)) {
+        this.buffer += (chunk.length * 100) / torrents.length;
         await Promise.all(
           chunk.map((t: Torrent) =>
+            // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+            // @ts-ignore
             t[func]().then(() => {
               d++;
-              this.progress = (d * 100) / this.torrents.length;
+              this.progress = (d * 100) / torrents.length;
             })
           )
         );
@@ -206,6 +229,43 @@ export default class Torrents extends Vue {
 
   updateFilter(f: TorrentFilterType) {
     this.filter = f;
+  }
+
+  load(type: "trackers" | "details" | "files" | "webSeeds" | "all") {
+    switch (type) {
+      case "trackers":
+        this.allProgress("loadTrackers", this.selected);
+        break;
+      case "details":
+        this.allProgress("loadDetails", this.selected);
+        break;
+      case "all":
+        this.allProgress("loadAll", this.selected);
+        break;
+    }
+  }
+
+  action(run: "pause" | "resume" | "recheck" | "reannounce" | "delete") {
+    switch (run) {
+      case "pause":
+        for (const [, torrents] of Object.entries(
+          groupBy(this.selected, (torrent: Torrent) => {
+            return torrent.getServer().name;
+          })
+        )) {
+          torrents[0].getServer().pauseTorrents(torrents.map(t => t.hash));
+        }
+        break;
+      case "resume":
+        for (const [, torrents] of Object.entries(
+          groupBy(this.selected, (torrent: Torrent) => {
+            return torrent.getServer().name;
+          })
+        )) {
+          torrents[0].getServer().resumeTorrents(torrents.map(t => t.hash));
+        }
+        break;
+    }
   }
 }
 </script>

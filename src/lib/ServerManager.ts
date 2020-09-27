@@ -55,6 +55,12 @@ export class ServerManager {
         message: event.data.name
       });
     });
+    server.on(TorrentServerEvents.TorrentListChanged, () => {
+      browser.runtime.sendMessage(TorrentServerEvents.TorrentListChanged)
+          // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+          // @ts-ignore
+          .catch(()=>{});
+    });
     this.servers.push(server);
   }
 

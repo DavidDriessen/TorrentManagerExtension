@@ -1,6 +1,6 @@
 {
   "name": "qbittorrent",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service build --mode development --watch",
@@ -15,6 +15,7 @@
     "@types/vue": "^2.0.0",
     "axios-concurrency": "latest",
     "core-js": "^3.6.5",
+    "lodash": "^4.17.20",
     "moment": "^2.27.0",
     "patch-package": "^6.2.2",
     "qbittorrent-api": "^1.0.0",
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^5.12.1",
     "@types/firefox-webext-browser": "^67.0.2",
+    "@types/lodash": "^4.14.161",
     "@types/vue-moment": "^4.0.0",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",

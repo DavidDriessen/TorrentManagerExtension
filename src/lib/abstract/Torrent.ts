@@ -122,6 +122,13 @@ export interface TorrentWebSeed {
   name: string;
 }
 
+export type TorrentFunctions =
+  | "loadTrackers"
+  | "loadDetails"
+  | "loadFiles"
+  | "loadWebSeeds"
+  | "loadAll";
+
 export class Torrent implements TorrentData {
   protected server: TorrentServer;
   public hash: string;
@@ -178,6 +185,10 @@ export class Torrent implements TorrentData {
     this.updateData(torrentData);
   }
 
+  get key() {
+    return this.server.name + "-" + this.hash;
+  }
+
   updateData(torrentData: TorrentData) {
     for (const param of Object.keys(torrentData)) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -191,7 +202,7 @@ export class Torrent implements TorrentData {
   }
 
   delete(deleteFiles = false) {
-    return this.server.deleteTorrent(this.hash, deleteFiles);
+    return this.server.deleteTorrents([this.hash], deleteFiles);
   }
 
   loadTrackers() {

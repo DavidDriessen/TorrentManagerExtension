@@ -9,16 +9,19 @@ function getManager() {
   return browser.extension.getBackgroundPage().serverManager;
 }
 
-export default new Vuex.Store({
-  state: {},
-  mutations: {},
+const store = new Vuex.Store({
+  state: {
+    torrents: []
+  },
+  mutations: {
+    update(state, torrents) {
+      state.torrents = torrents;
+    }
+  },
   actions: {},
   getters: {
     servers() {
       return getManager().getServers();
-    },
-    torrents() {
-      return getManager().getTorrents();
     },
     categories() {
       return getManager().getCategories();
@@ -64,3 +67,12 @@ export default new Vuex.Store({
   },
   modules: {}
 });
+
+export default store;
+
+browser.runtime.onMessage.addListener(() => {
+  store.commit("update", getManager().getTorrents());
+  console.log("test");
+});
+
+store.commit("update", getManager().getTorrents());

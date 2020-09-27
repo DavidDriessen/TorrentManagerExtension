@@ -1,5 +1,6 @@
 import Vue from "vue";
 import TorrentServer, {
+  AddTorrentOptions,
   TorrentServerEvents,
   Versions
 } from "@/lib/abstract/TorrentServer";
@@ -57,10 +58,11 @@ export class QbitTorrentServer extends TorrentServer {
               }
               this.torrents[hash].updateData(response.data.torrents[hash]);
             } else {
-              this.torrents[hash] = new Torrent(
-                this,
+              this.fire(TorrentServerEvents.TorrentListChanged);
+              Vue.set(
+                this.torrents,
                 hash,
-                response.data.torrents[hash]
+                new Torrent(this, hash, response.data.torrents[hash])
               );
             }
           }
@@ -68,22 +70,28 @@ export class QbitTorrentServer extends TorrentServer {
         if (response.data.torrents_removed)
           for (let i = 0; i < response.data.torrents_removed.length; i++) {
             Vue.delete(this.torrents, response.data.torrents_removed[i]);
+            this.fire(TorrentServerEvents.TorrentListChanged);
           }
         if (response.data.categories)
-          for (const name in Object.keys(response.data.categories)) {
+          for (const name of Object.keys(response.data.categories)) {
             Vue.set(this.categories, name, response.data.categories[name]);
           }
         if (response.data.categories_removed)
           for (let i = 0; i < response.data.categories_removed.length; i++) {
             Vue.delete(this.categories, response.data.categories_removed[i]);
           }
+        if (response.data.server_state)
+          for (const param of Object.keys(response.data.server_state)) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+            // @ts-ignore
+            this.state[param] = response.data.server_state[param];
+          }
       });
   }
 
   addTorrent(
     torrents: string | string[],
-    category: string,
-    name: string | undefined
+    options: AddTorrentOptions
   ) {
     return new Promise((resolve, reject) => {
       if (typeof torrents == "string") torrents = [torrents];
@@ -94,17 +102,22 @@ export class QbitTorrentServer extends TorrentServer {
       ) {
         const data = new FormData();
         data.append("urls", torrents.join("\n"));
-        data.append("category", category || "");
-        data.append("rename", name || "");
+        if (options.category)
+          data.append("category", options.category);
+        if (options.name)
+          data.append("rename", options.name);
+        data.append("autoTMM", (!!options.automatic).toString());
+        if(!options.automatic && options.savePath)
+          data.append("savepath ", options.savePath);
         this.connection
-          .post("/api/v2/torrents/addServer", data)
+          .post("/api/v2/torrents/add", data)
           .then(resolve)
           .catch(reject);
       } else reject();
     });
   }
 
-  deleteTorrent(hash: string, deleteFiles = false) {
+  deleteTorrents(hash: string[], deleteFiles = false) {
     return new Promise((resolve, reject) => {
       if (hash) {
         this.connection
@@ -116,8 +129,48 @@ export class QbitTorrentServer extends TorrentServer {
               "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
             },
             params: {
-              hashes: hash,
+              hashes: hash.join("|"),
               deleteFiles: deleteFiles
+            }
+          })
+          .then(resolve)
+          .catch(reject);
+      } else reject();
+    });
+  }
+  pauseTorrents(hash: string[]) {
+    return new Promise((resolve, reject) => {
+      if (hash) {
+        this.connection
+          .get("/api/v2/torrents/pause", {
+            headers: {
+              accept:
+                "text/javascript, text/html, application/xml, text/xml, */*",
+              "accept-language": "nl-NL,nl;q=0.9,en-US;q=0.8,en;q=0.7,cs;q=0.6",
+              "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+            },
+            params: {
+              hashes: hash.join("|")
+            }
+          })
+          .then(resolve)
+          .catch(reject);
+      } else reject();
+    });
+  }
+  resumeTorrents(hash: string[]) {
+    return new Promise((resolve, reject) => {
+      if (hash) {
+        this.connection
+          .get("/api/v2/torrents/resume", {
+            headers: {
+              accept:
+                "text/javascript, text/html, application/xml, text/xml, */*",
+              "accept-language": "nl-NL,nl;q=0.9,en-US;q=0.8,en;q=0.7,cs;q=0.6",
+              "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+            },
+            params: {
+              hashes: hash.join("|")
             }
           })
           .then(resolve)

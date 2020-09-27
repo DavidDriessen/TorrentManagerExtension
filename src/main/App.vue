@@ -15,6 +15,7 @@
 
       <v-spacer></v-spacer>
       <AddTorrentModal ref="addTorrent" />
+      <ServerStateModal />
       <v-btn to="/" text>Torrents</v-btn>
       <v-btn to="/options" text>Options</v-btn>
       <v-tooltip bottom>
@@ -40,11 +41,12 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { AsyncFilterMixin } from "@tygr/vue-async-filter";
-import Login from "@/components/Login.vue";
-import AddTorrentModal from "@/components/AddTorrentModal.vue";
+import Login from "@/main/components/Login.vue";
+import AddTorrentModal from "@/main/components/AddTorrentModal.vue";
+import ServerStateModal from "@/main/components/ServerStateModal.vue";
 
 @Component({
-  components: { AddTorrentModal, Login },
+  components: { ServerStateModal, AddTorrentModal, Login },
   mixins: [AsyncFilterMixin]
 })
 export default class App extends Vue {
