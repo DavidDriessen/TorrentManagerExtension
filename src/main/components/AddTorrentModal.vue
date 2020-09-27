@@ -28,7 +28,7 @@
               <v-select
                 label="Category"
                 :items="categories"
-                v-model="category"
+                v-model="options.category"
                 no-data-text="Select a server"
                 clearable
               />

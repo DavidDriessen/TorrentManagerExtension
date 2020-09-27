@@ -179,7 +179,7 @@ export default class Options extends Vue {
   mounted() {
     this.types = Object.values(ServerType);
     browser.storage.sync.get().then(data => {
-      if (data.links && data.links.lenght > 0) this.form.links = data.links;
+      if (data.links && data.links.length > 0) this.form.links = data.links;
       else this.addLink();
       if (data.servers)
         this.form.servers = data.servers.map((s: ServerSettings) => {
