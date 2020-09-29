@@ -54,12 +54,22 @@
             </template>
             <v-list>
               <v-list-item @click="load('trackers')" text>
+                <v-list-item-icon>
+                  <v-icon>fas fa-truck-loading</v-icon>
+                </v-list-item-icon>
                 <v-list-item-title>Load Trackers</v-list-item-title>
               </v-list-item>
+              <v-divider />
               <v-list-item @click="action('pause')" text>
+                <v-list-item-icon>
+                  <v-icon>fas fa-pause</v-icon>
+                </v-list-item-icon>
                 <v-list-item-title>Pause selected torrents</v-list-item-title>
               </v-list-item>
               <v-list-item @click="action('resume')" text>
+                <v-list-item-icon>
+                  <v-icon>fas fa-play</v-icon>
+                </v-list-item-icon>
                 <v-list-item-title>Resume selected torrents</v-list-item-title>
               </v-list-item>
             </v-list>
