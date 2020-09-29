@@ -17,7 +17,8 @@ Vue.filter("FromNow", (time: number) => {
   return moment.unix(time).fromNow();
 });
 Vue.filter("ETA", (time: number) => {
-  return moment.unix(0).from(moment.unix(time));
+  if(time == 8640000) return "∞";
+  return moment.unix(time).from(moment.unix(0));
 });
 
 const app = new Vue({

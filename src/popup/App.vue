@@ -21,16 +21,24 @@
         :headers="[
           { text: 'Name', value: 'name' },
           { text: 'Size', value: 'size', width: '100px', filterable: false },
-          { text: 'Progress', value: 'progress', filterable: false }
+          { text: 'Progress', value: 'progress', filterable: false },
+          { text: 'ETA', value: 'eta', width: '100px', filterable: false }
         ]"
         :items="torrents"
-        :items-per-page="10"
+        :items-per-page="8"
+        :footer-props="{
+          'items-per-page-options': [8]
+        }"
+        :hide-default-footer="torrents.length <= 8"
       >
         <template v-slot:progress>
           <v-progress-linear :indeterminate="true" />
         </template>
         <template v-slot:item.size="{ item }">
           {{ item.size | prettyBytes }}
+        </template>
+        <template v-slot:item.eta="{ item }">
+          {{ item.eta | ETA }}
         </template>
         <template v-slot:item.progress="{ item }">
           <v-progress-circular
@@ -83,8 +91,9 @@ export default class QBitTorrentPopup extends Vue {
 </script>
 
 <style>
-html {
-  width: 600px;
+html,
+body {
+  width: 800px;
   max-height: 400px;
 }
 </style>
