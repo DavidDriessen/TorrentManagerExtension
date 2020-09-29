@@ -72,7 +72,6 @@ export default store;
 
 browser.runtime.onMessage.addListener(() => {
   store.commit("update", getManager().getTorrents());
-  console.log("test");
 });
 
 store.commit("update", getManager().getTorrents());

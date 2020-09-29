@@ -21,9 +21,9 @@
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn v-on="on" small fab @click="darkMode" icon>
-            <v-icon :color="!$vuetify.theme.dark ? 'black' : 'white'"
-              >fas fa-adjust</v-icon
-            >
+            <v-icon :color="!$vuetify.theme.dark ? 'black' : 'white'">
+              fas fa-adjust
+            </v-icon>
           </v-btn>
         </template>
         <span v-if="!$vuetify.theme.dark">Dark Mode On</span>
