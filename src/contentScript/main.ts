@@ -4,11 +4,12 @@ let links: TorrentLink[] = [];
 
 browser.storage.sync.get("links").then(data => {
   if (data.links) links = data.links;
+  console.log(data);
 });
 
 function checkLink(link: string) {
   for (const l of links) {
-    if (link.startsWith(l.url)) return true;
+    if (l.url && link.startsWith(l.url)) return true;
   }
   return false;
 }
