@@ -57,7 +57,9 @@
                 <v-list-item-icon>
                   <v-icon>fas fa-truck-loading</v-icon>
                 </v-list-item-icon>
-                <v-list-item-title>Load Trackers</v-list-item-title>
+                <v-list-item-title>
+                  Load Trackers for selected torrents
+                </v-list-item-title>
               </v-list-item>
               <v-divider />
               <v-list-item @click="action('pause')" text>
@@ -72,6 +74,10 @@
                 </v-list-item-icon>
                 <v-list-item-title>Resume selected torrents</v-list-item-title>
               </v-list-item>
+              <DeleteTorrentModal
+                :torrents="selected"
+                @deleted="selected = []"
+              />
             </v-list>
           </v-menu>
         </v-toolbar>
@@ -119,9 +125,15 @@ import TorrentFilter, {
 import TorrentDetailsModal from "@/main/components/TorrentDetailsModal.vue";
 import groupBy from "lodash/groupBy";
 import TorrentState from "@/main/components/TorrentState.vue";
+import DeleteTorrentModal from "@/main/components/DeleteTorrentModal.vue";
 
 @Component({
-  components: { TorrentState, TorrentDetailsModal, TorrentFilter },
+  components: {
+    DeleteTorrentModal,
+    TorrentState,
+    TorrentDetailsModal,
+    TorrentFilter
+  },
   mixins: [AsyncFilterMixin]
 })
 export default class Torrents extends Vue {
