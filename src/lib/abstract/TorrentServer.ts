@@ -182,6 +182,8 @@ export abstract class TorrentServer extends EventEmitter {
 
   abstract resumeTorrents(hash: string[]): Promise<unknown>;
 
+  abstract setFilePriority(hash: string, ids: number[], priority: number): Promise<void>;
+
   getState() {
     return this.state;
   }

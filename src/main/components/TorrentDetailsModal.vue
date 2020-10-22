@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" width="800">
+  <v-dialog v-model="dialog" width="1000">
     <v-card rounded shaped raised>
       <v-card-title>
         <span class="headline">{{ torrent.name }}</span>
@@ -157,10 +157,11 @@
             <v-data-table
               :headers="[
                 { text: 'Name', value: 'name' },
-                { text: 'Size', value: 'size', width: '150px' },
-                { text: 'Progress', value: 'progress', width: '50' },
-                { text: '', value: 'actions', width: '50', sortable: false }
+                { text: 'Priority', value: 'priority', width: '182px' },
+                { text: 'Size', value: 'size', width: '100px' },
+                { text: 'Progress', value: 'progress', width: '50px' }
               ]"
+              group-by="group"
               :items="files"
               :items-per-page="5"
               :hide-default-footer="files && files.length <= 5"
@@ -180,21 +181,19 @@
                   >{{ +(item.progress * 100).toFixed(1) }}
                 </v-progress-circular>
               </template>
-              <template v-slot:item.actions>
-                <v-menu offset-y left>
-                  <template v-slot:activator="{ on }">
-                    <v-btn v-on="on" icon>
-                      <v-icon small>fas fa-ellipsis-v</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-list>
-                    <v-list-item>
-                      <v-list-item-title>
-                        Coming Soon
-                      </v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
+              <template v-slot:item.priority="{ item }">
+                <v-select
+                  :items="[
+                    { value: 0, text: 'Don\'t download' },
+                    { value: 1, text: 'Normal' },
+                    { value: 6, text: 'High' },
+                    { value: 7, text: 'Max' }
+                  ]"
+                  :value="
+                    item.priority > 0 && item.priority < 6 ? 1 : item.priority
+                  "
+                  @change="setFilePriority(item.id, $event)"
+                />
               </template>
               <template v-slot:no-data>
                 <v-btn color="primary" @click="initialize">
@@ -224,6 +223,7 @@ import {
 } from "@/lib/abstract/Torrent";
 import DeleteTorrentModal from "@/main/components/DeleteTorrentModal.vue";
 import moment from "moment";
+
 @Component({
   components: { DeleteTorrentModal }
 })
@@ -240,6 +240,10 @@ export default class TorrentDetailsModal extends Vue {
     return moment()
       .add(this.torrent.time_active, "seconds")
       .fromNow(true);
+  }
+
+  setFilePriority(id: number, priority: number) {
+    this.torrent.setFilePriority([id], priority);
   }
 
   open(torrent: Torrent) {

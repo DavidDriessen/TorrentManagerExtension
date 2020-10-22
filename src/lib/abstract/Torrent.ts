@@ -109,6 +109,7 @@ export interface TorrentTracker {
 }
 
 export interface TorrentFile {
+  id: number;
   availability: number;
   is_seed: boolean;
   name: string;
@@ -116,6 +117,7 @@ export interface TorrentFile {
   priority: number;
   progress: number;
   size: number;
+  group?: string;
 }
 
 export interface TorrentWebSeed {
@@ -203,6 +205,10 @@ export class Torrent implements TorrentData {
 
   delete(deleteFiles = false) {
     return this.server.deleteTorrents([this.hash], deleteFiles);
+  }
+
+  setFilePriority(fileIds: number[], priority: number) {
+    return this.server.setFilePriority(this.hash, fileIds, priority);
   }
 
   loadTrackers() {
