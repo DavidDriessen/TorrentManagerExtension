@@ -52,9 +52,12 @@ import ServerStateModal from "@/main/components/ServerStateModal.vue";
 export default class App extends Vue {
   mounted() {
     if (this.$route.params.newTorrent) {
-      this.$refs.addTorrent.open(this.$route.params.newTorrent);
+      ((this.$refs.addTorrent as unknown) as { open(url: string): void }).open(
+        this.$route.params.newTorrent
+      );
     }
   }
+
   darkMode() {
     this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
     browser.storage.sync.set({

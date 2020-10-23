@@ -232,9 +232,9 @@ export default class TorrentDetailsModal extends Vue {
   tab = null;
   loading = false;
   torrent = {} as Torrent;
-  files: Array<TorrentFile> | null = null;
-  details: TorrentDatails | null = null;
-  trackers: Array<TorrentTracker> | null = null;
+  files: TorrentFile[] | null = null;
+  details: TorrentDatails[] | null = null;
+  trackers: TorrentTracker[] | null = null;
 
   get timeActive() {
     return moment()

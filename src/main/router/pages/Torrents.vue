@@ -23,6 +23,7 @@
       @click:row="select"
       show-select
       item-key="key"
+      :footer-props="{ 'items-per-page-options': [15, 50, 100, 200] }"
     >
       <template v-slot:progress>
         <v-progress-linear
@@ -202,7 +203,7 @@ export default class Torrents extends Vue {
     return true;
   }
 
-  allProgress(func: () => Promise<void>, torrents: Torrent[]) {
+  allProgress(func: (t: Torrent) => Promise<void>, torrents: Torrent[]) {
     let d = 0;
     this.progress = 0;
     this.buffer = 0;
