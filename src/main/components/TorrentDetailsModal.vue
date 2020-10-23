@@ -192,7 +192,7 @@
                   :value="
                     item.priority > 0 && item.priority < 6 ? 1 : item.priority
                   "
-                  @change="setFilePriority(item.id, $event)"
+                  @change="setFilePriority(item, $event)"
                 />
               </template>
               <template v-slot:no-data>
@@ -242,8 +242,12 @@ export default class TorrentDetailsModal extends Vue {
       .fromNow(true);
   }
 
-  setFilePriority(id: number, priority: number) {
-    this.torrent.setFilePriority([id], priority);
+  setFilePriority(file: TorrentFile, priority: number) {
+    this.$store.dispatch("setFilePriority", {
+      torrent: this.torrent,
+      files: [file],
+      priority
+    });
   }
 
   open(torrent: Torrent) {
@@ -251,7 +255,8 @@ export default class TorrentDetailsModal extends Vue {
     this.details = null;
     this.trackers = null;
     this.files = null;
-    this.torrent.loadAll().then(() => {
+    this.$store.dispatch("loadTorrent", torrent).then(torrent => {
+      this.torrent = torrent;
       this.trackers = this.torrent.trackers || null;
       this.files = this.torrent.files || null;
       this.details = this.torrent.details || null;

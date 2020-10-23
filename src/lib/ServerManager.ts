@@ -4,6 +4,7 @@ import TorrentServer, {
   TorrentServerEvents
 } from "@/lib/abstract/TorrentServer";
 import { QbitTorrentServer } from "@/lib/serverTypes/qbitTorrentServer";
+import { Torrent } from "@/lib/abstract/Torrent";
 
 export interface Notify {
   downloading: boolean;
@@ -15,8 +16,6 @@ export class ServerManager {
   private notifications: Notify = {} as Notify;
 
   constructor() {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
     browser.storage.sync.get("servers").then(({ servers }) => {
       for (const settings of servers) {
         switch (settings.type) {
@@ -26,8 +25,6 @@ export class ServerManager {
       }
       this.update();
     });
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
     browser.storage.sync.get("notify").then(({ notify }) => {
       this.notifications = notify as Notify;
     });
@@ -68,12 +65,48 @@ export class ServerManager {
           message: event.data.name
         });
     });
-    server.on(TorrentServerEvents.TorrentListChanged, () => {
+    server.on(TorrentServerEvents.TorrentChanged, ({ data }) => {
       browser.runtime
-        .sendMessage(TorrentServerEvents.TorrentListChanged)
+        .sendMessage({
+          event: TorrentServerEvents.TorrentChanged,
+          data: data.toObject()
+        })
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         .catch(() => {});
     });
+    server.on(TorrentServerEvents.TorrentAdded, ({ data }) => {
+      browser.runtime
+        .sendMessage({
+          event: TorrentServerEvents.TorrentAdded,
+          data: data.toObject()
+        })
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        .catch(() => {});
+    });
+    server.on(
+      TorrentServerEvents.TorrentRemoved,
+      ({ data }: { data: Torrent }) => {
+        browser.runtime
+          .sendMessage({
+            event: TorrentServerEvents.TorrentRemoved,
+            data: data.toObject()
+          })
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          .catch(() => {});
+      }
+    );
+    server.on(
+      TorrentServerEvents.StateChanged,
+      ({ data }: { data: TorrentServer }) => {
+        browser.runtime
+          .sendMessage({
+            event: TorrentServerEvents.TorrentRemoved,
+            data: { id: data.id, name: data.name, state: data.getState() }
+          })
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          .catch(() => {});
+      }
+    );
     this.servers.push(server);
   }
 
@@ -81,15 +114,11 @@ export class ServerManager {
     return this.servers;
   }
 
-  getTorrents() {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
-    return [].concat(...this.servers.map(m => m.getTorrents()));
+  getTorrents(): Torrent[] {
+    return ([] as Torrent[]).concat(...this.servers.map(m => m.getTorrents()));
   }
 
   getCategories() {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
-    return [].concat(...this.servers.map(m => m.getCategories()));
+    return ([] as string[]).concat(...this.servers.map(m => m.getCategories()));
   }
 }

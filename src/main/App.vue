@@ -52,8 +52,6 @@ import ServerStateModal from "@/main/components/ServerStateModal.vue";
 export default class App extends Vue {
   mounted() {
     if (this.$route.params.newTorrent) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-      // @ts-ignore
       this.$refs.addTorrent.open(this.$route.params.newTorrent);
     }
   }

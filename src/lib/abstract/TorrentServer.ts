@@ -34,6 +34,7 @@ export interface ServerSettings {
 }
 
 export interface ServerState {
+  [key: string]: string | number | boolean;
   alltime_dl: number;
   alltime_ul: number;
   average_time_queue: number;
@@ -71,7 +72,10 @@ export enum TorrentServerEvents {
   ServerError = "ServerError",
   Downloading = "Downloading",
   Downloaded = "Downloaded",
-  TorrentListChanged = "TorrentListChanged"
+  TorrentAdded = "TorrentAdded",
+  TorrentRemoved = "TorrentRemoved",
+  TorrentChanged = "TorrentChanged",
+  StateChanged = "StateChanged"
 }
 
 export interface Versions {
@@ -85,6 +89,7 @@ export interface Versions {
 }
 
 export abstract class TorrentServer extends EventEmitter {
+  readonly id: string;
   readonly name: string;
   protected connection: AxiosInstance;
   protected state: ServerState = {} as ServerState;
@@ -96,6 +101,11 @@ export abstract class TorrentServer extends EventEmitter {
 
   constructor(settings: ServerSettings) {
     super();
+    this.id =
+      "_" +
+      Math.random()
+        .toString(36)
+        .substr(2, 9);
     this.name = settings.name;
     this.connection = axios.create({ baseURL: settings.host as string });
     ConcurrencyManager(this.connection, 1000);
@@ -182,7 +192,11 @@ export abstract class TorrentServer extends EventEmitter {
 
   abstract resumeTorrents(hash: string[]): Promise<unknown>;
 
-  abstract setFilePriority(hash: string, ids: number[], priority: number): Promise<void>;
+  abstract setFilePriority(
+    hash: string,
+    ids: number[],
+    priority: number
+  ): Promise<void>;
 
   getState() {
     return this.state;
@@ -205,6 +219,13 @@ export abstract class TorrentServer extends EventEmitter {
   abstract getWebSeeds(hash: string): Promise<Array<TorrentWebSeed>>;
 
   abstract getVersion(): Promise<Versions>;
+
+  toObject() {
+    return {
+      id: this.id,
+      name: this.name
+    };
+  }
 }
 
 export default TorrentServer;

@@ -22,31 +22,46 @@
               </v-row>
               <v-row>
                 <v-col>
-                  <label>All-time upload</label>
-                  <v-spacer />
-                  {{ server.getState().alltime_ul | prettyBytes }}
+                  <v-text-field
+                    label="All-time upload"
+                    :value="server.state.alltime_ul | prettyBytes"
+                    readonly
+                    outlined
+                  />
                 </v-col>
                 <v-col>
-                  <label>All-time download</label>
-                  <v-spacer />
-                  {{ server.getState().alltime_dl | prettyBytes }}
+                  <v-text-field
+                    label="All-time download"
+                    :value="server.state.alltime_dl | prettyBytes"
+                    readonly
+                    outlined
+                  />
                 </v-col>
                 <v-col>
-                  <label>All-time share ratio</label>
-                  <v-spacer />
-                  {{ server.getState().global_ratio }}
+                  <v-text-field
+                    label="All-time share ratio"
+                    :value="server.state.global_ratio"
+                    readonly
+                    outlined
+                  />
                 </v-col>
               </v-row>
               <v-row>
                 <v-col>
-                  <label>Free space on disk</label>
-                  <v-spacer />
-                  {{ server.getState().free_space_on_disk | prettyBytes }}
+                  <v-text-field
+                    label="Free space on disk"
+                    :value="server.state.free_space_on_disk | prettyBytes"
+                    readonly
+                    outlined
+                  />
                 </v-col>
                 <v-col>
-                  <label>Connected peers</label>
-                  <v-spacer />
-                  {{ server.getState().total_peer_connections }}
+                  <v-text-field
+                    label="Connected peers"
+                    :value="server.state.total_peer_connections"
+                    readonly
+                    outlined
+                  />
                 </v-col>
               </v-row>
             </v-card-text>

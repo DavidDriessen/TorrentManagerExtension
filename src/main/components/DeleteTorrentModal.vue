@@ -19,7 +19,7 @@
         Are you sure you want to delete torrent:<br />
         {{ torrent.name }} <br />
         from server:<br />
-        {{ torrent.getServer().name }}<br />
+        {{ torrent.server.name }}<br />
         <v-checkbox label="Remove files" v-model="removeFiles" />
       </v-card-text>
       <v-card-text v-if="torrents">
@@ -46,7 +46,6 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { Torrent } from "@/lib/abstract/Torrent";
-import groupBy from "lodash/groupBy";
 
 @Component
 export default class DeleteTorrentModal extends Vue {
@@ -59,26 +58,28 @@ export default class DeleteTorrentModal extends Vue {
   removeTorrent() {
     this.loading = true;
     if (this.torrent) {
-      this.torrent.delete(this.removeFiles).finally(() => {
-        this.dialog = false;
-        this.loading = false;
-        this.$emit("deleted");
-      });
+      this.$store
+        .dispatch("deleteTorrents", {
+          torrents: [this.torrent],
+          removeFiles: this.removeFiles
+        })
+        .then(() => {
+          this.dialog = false;
+          this.loading = false;
+          this.$emit("deleted");
+        });
     }
     if (this.torrents) {
-      for (const [, torrents] of Object.entries(
-        groupBy(this.torrents, (torrent: Torrent) => {
-          return torrent.getServer().name;
+      this.$store
+        .dispatch("deleteTorrents", {
+          torrents: this.torrents,
+          removeFiles: this.removeFiles
         })
-      )) {
-        torrents[0].getServer().deleteTorrents(
-          torrents.map(t => t.hash),
-          this.removeFiles
-        );
-      }
-      this.dialog = false;
-      this.loading = false;
-      this.$emit("deleted");
+        .then(() => {
+          this.dialog = false;
+          this.loading = false;
+          this.$emit("deleted");
+        });
     }
   }
 }

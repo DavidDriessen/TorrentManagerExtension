@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import TorrentServer from "@/lib/abstract/TorrentServer";
-import Vue from "vue";
 
 export enum TorrentState {
   Error = "error",
@@ -124,15 +124,8 @@ export interface TorrentWebSeed {
   name: string;
 }
 
-export type TorrentFunctions =
-  | "loadTrackers"
-  | "loadDetails"
-  | "loadFiles"
-  | "loadWebSeeds"
-  | "loadAll";
-
 export class Torrent implements TorrentData {
-  protected server: TorrentServer;
+  public server: TorrentServer;
   public hash: string;
   public name!: string;
   public added_on!: number;
@@ -177,7 +170,7 @@ export class Torrent implements TorrentData {
   public upspeed!: number;
 
   files: Array<TorrentFile> | undefined;
-  details: TorrentDatails | undefined;
+  details: Array<TorrentDatails> | undefined;
   trackers: Array<TorrentTracker> | undefined;
   webSeeds: Array<TorrentWebSeed> | undefined;
 
@@ -199,10 +192,6 @@ export class Torrent implements TorrentData {
     }
   }
 
-  getServer() {
-    return this.server;
-  }
-
   delete(deleteFiles = false) {
     return this.server.deleteTorrents([this.hash], deleteFiles);
   }
@@ -213,24 +202,28 @@ export class Torrent implements TorrentData {
 
   loadTrackers() {
     return this.server.getTrackers(this.hash).then(data => {
-      Vue.set(this, "trackers", data);
+      this.trackers = data;
     });
   }
+
   loadDetails() {
     return this.server.getDetails(this.hash).then(data => {
-      Vue.set(this, "details", data);
+      this.details = data;
     });
   }
+
   loadFiles() {
     return this.server.getFiles(this.hash).then(data => {
-      Vue.set(this, "files", data);
+      this.files = data;
     });
   }
+
   loadWebSeeds() {
     return this.server.getWebSeeds(this.hash).then(data => {
-      Vue.set(this, "webSeeds", data);
+      this.webSeeds = data;
     });
   }
+
   loadAll() {
     return Promise.all([
       this.loadTrackers(),
@@ -238,5 +231,58 @@ export class Torrent implements TorrentData {
       this.loadFiles(),
       this.loadWebSeeds()
     ]);
+  }
+
+  toObject() {
+    return {
+      server: this.server.toObject(),
+      key: this.key,
+      hash: this.hash,
+      name: this.name,
+      added_on: this.added_on,
+      amount_left: this.amount_left,
+      auto_tmm: this.auto_tmm,
+      category: this.category,
+      completed: this.completed,
+      completion_on: this.completion_on,
+      dl_limit: this.dl_limit,
+      dlspeed: this.dlspeed,
+      downloaded: this.downloaded,
+      downloaded_session: this.downloaded_session,
+      eta: this.eta,
+      f_l_piece_prio: this.f_l_piece_prio,
+      force_start: this.force_start,
+      last_activity: this.last_activity,
+      magnet_uri: this.magnet_uri,
+      max_ratio: this.max_ratio,
+      max_seeding_time: this.max_seeding_time,
+      num_complete: this.num_complete,
+      num_incomplete: this.num_incomplete,
+      num_leechs: this.num_leechs,
+      num_seeds: this.num_seeds,
+      priority: this.priority,
+      progress: this.progress,
+      ratio: this.ratio,
+      ratio_limit: this.ratio_limit,
+      save_path: this.save_path,
+      seeding_time_limit: this.seeding_time_limit,
+      seen_complete: this.seen_complete,
+      seq_dl: this.seq_dl,
+      size: this.size,
+      state: this.state,
+      super_seeding: this.super_seeding,
+      tags: this.tags,
+      time_active: this.time_active,
+      total_size: this.total_size,
+      tracker: this.tracker,
+      up_limit: this.up_limit,
+      uploaded: this.uploaded,
+      uploaded_session: this.uploaded_session,
+      upspeed: this.upspeed,
+      files: this.files,
+      details: this.details,
+      trackers: this.trackers,
+      webSeeds: this.webSeeds
+    };
   }
 }
