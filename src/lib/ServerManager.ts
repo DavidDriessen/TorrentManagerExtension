@@ -65,21 +65,21 @@ export class ServerManager {
           message: event.data.name
         });
     });
-    server.on(TorrentServerEvents.TorrentChanged, ({data}) => {
+    server.on(TorrentServerEvents.TorrentsChanged, ({data}) => {
       browser.runtime
         .sendMessage({
-          event: TorrentServerEvents.TorrentChanged,
-          data: data.toObject()
+          event: TorrentServerEvents.TorrentsChanged,
+          data: data.map((t: Torrent) => t.toObject())
         })
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         .catch(() => {
         });
     });
-    server.on(TorrentServerEvents.TorrentAdded, ({data}) => {
+    server.on(TorrentServerEvents.TorrentsAdded, ({data}) => {
       browser.runtime
         .sendMessage({
-          event: TorrentServerEvents.TorrentAdded,
-          data: data.toObject()
+          event: TorrentServerEvents.TorrentsAdded,
+          data: data.map((t: Torrent) => t.toObject())
         })
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         .catch(() => {

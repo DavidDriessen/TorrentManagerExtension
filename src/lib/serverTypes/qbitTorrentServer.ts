@@ -3,7 +3,7 @@ import TorrentServer, {
   TorrentServerEvents,
   Versions
 } from "@/lib/abstract/TorrentServer";
-import { Torrent, TorrentFile, TorrentState } from "@/lib/abstract/Torrent";
+import {Torrent, TorrentFile, TorrentState} from "@/lib/abstract/Torrent";
 
 export class QbitTorrentServer extends TorrentServer {
   private rid = 0;
@@ -11,7 +11,7 @@ export class QbitTorrentServer extends TorrentServer {
   login(username: string, password: string) {
     return this.connection
       .get("/api/v2/auth/login", {
-        params: { username, password }
+        params: {username, password}
       })
       .then(response => {
         if (response.data == "Fails.") {
@@ -27,7 +27,7 @@ export class QbitTorrentServer extends TorrentServer {
 
   update() {
     return this.connection
-      .get("/api/v2/sync/maindata", { params: { rid: this.rid } })
+      .get("/api/v2/sync/maindata", {params: {rid: this.rid}})
       .then(response => {
         this.rid = response.data.rid;
         if (response.data.full_update) {
@@ -36,6 +36,8 @@ export class QbitTorrentServer extends TorrentServer {
           this.trackers = {};
         }
         if (response.data.torrents) {
+          let updated = [];
+          let added = [];
           for (const hash of Object.keys(response.data.torrents)) {
             if (this.torrents[hash]) {
               if (
@@ -58,18 +60,21 @@ export class QbitTorrentServer extends TorrentServer {
                 this.fire(TorrentServerEvents.Downloaded, this.torrents[hash]);
               }
               this.torrents[hash].updateData(response.data.torrents[hash]);
-              this.fire(
-                TorrentServerEvents.TorrentChanged,
-                this.torrents[hash]
-              );
+              updated.push(this.torrents[hash]);
             } else {
               this.torrents[hash] = new Torrent(
                 this,
                 hash,
                 response.data.torrents[hash]
               );
-              this.fire(TorrentServerEvents.TorrentAdded, this.torrents[hash]);
+              added.push(this.torrents[hash]);
             }
+          }
+          if (updated) {
+            this.fire(TorrentServerEvents.TorrentsChanged, updated);
+          }
+          if (added) {
+            this.fire(TorrentServerEvents.TorrentsAdded, added);
           }
         }
         if (response.data.torrents_removed)
@@ -190,7 +195,7 @@ export class QbitTorrentServer extends TorrentServer {
   getTrackers(hash: string) {
     return this.connection
       .get("/api/v2/torrents/trackers", {
-        params: { hash: hash }
+        params: {hash: hash}
       })
       .then(response => response.data);
   }
@@ -198,7 +203,7 @@ export class QbitTorrentServer extends TorrentServer {
   getDetails(hash: string) {
     return this.connection
       .get("/api/v2/torrents/properties", {
-        params: { hash: hash }
+        params: {hash: hash}
       })
       .then(response => response.data);
   }
@@ -206,7 +211,7 @@ export class QbitTorrentServer extends TorrentServer {
   getFiles(hash: string) {
     return this.connection
       .get("/api/v2/torrents/files", {
-        params: { hash: hash }
+        params: {hash: hash}
       })
       .then(response =>
         response.data.map((f: TorrentFile, k: number) => {
@@ -227,7 +232,7 @@ export class QbitTorrentServer extends TorrentServer {
   getWebSeeds(hash: string) {
     return this.connection
       .get("/api/v2/torrents/webseeds", {
-        params: { hash: hash }
+        params: {hash: hash}
       })
       .then(response => response.data);
   }

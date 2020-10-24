@@ -72,9 +72,9 @@ export enum TorrentServerEvents {
   ServerError = "ServerError",
   Downloading = "Downloading",
   Downloaded = "Downloaded",
-  TorrentAdded = "TorrentAdded",
+  TorrentsAdded = "TorrentsAdded",
   TorrentRemoved = "TorrentRemoved",
-  TorrentChanged = "TorrentChanged",
+  TorrentsChanged = "TorrentsChanged",
   StateChanged = "StateChanged"
 }
 

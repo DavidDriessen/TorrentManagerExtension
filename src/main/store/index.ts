@@ -10,7 +10,7 @@ const store = new Vuex.Store({
     servers: [] as { id: string; name: string; state: ServerState }[],
     categories: [] as { name: string; savePath: string }[],
     torrents: [] as Torrent[],
-    trackers: {} as { [key: string]: {serverId: string, torrentHash: string}[] }
+    trackers: {} as { [key: string]: { serverId: string, torrentHash: string }[] }
   },
   mutations: {
     setTorrents(state, torrents) {
@@ -25,16 +25,18 @@ const store = new Vuex.Store({
     setServers(state, servers) {
       state.servers = servers;
     },
-    updateTorrent(state, torrent) {
-      const index = state.torrents.findIndex(
-        t => t.server.id == torrent.server.id && t.hash == torrent.hash
-      );
-      if (index >= 0) {
-        for (const param of Object.keys(torrent)) {
-          Vue.set(state.torrents[index], param, torrent[param]);
+    updateTorrents(state, torrents) {
+      for (const torrent of torrents) {
+        const index = state.torrents.findIndex(
+          t => t.server.id == torrent.server.id && t.hash == torrent.hash
+        );
+        if (index >= 0) {
+          for (const param of Object.keys(torrent)) {
+            Vue.set(state.torrents[index], param, torrent[param]);
+          }
+        } else {
+          state.torrents.push(torrent);
         }
-      } else {
-        state.torrents.push(torrent);
       }
     },
     updateTrackers(state, trackers) {
@@ -72,7 +74,7 @@ const store = new Vuex.Store({
     getTrackers({commit}) {
       return browser.runtime
         .sendMessage({action: "getTrackers"})
-        .then((trackers: {[key: string]: string[]}) => {
+        .then((trackers: { [key: string]: string[] }) => {
           commit("setTrackers", trackers);
         });
     },
@@ -95,7 +97,7 @@ const store = new Vuex.Store({
         .sendMessage({action: "loadTorrent", torrent})
         .then((torrent: Torrent) => {
           if (torrent) {
-            commit("updateTorrent", torrent);
+            commit("updateTorrents", [torrent]);
           }
           return torrent;
         });
@@ -105,7 +107,7 @@ const store = new Vuex.Store({
         .sendMessage({action: "loadTrackers", torrent})
         .then((torrent: Torrent) => {
           if (torrent) {
-            commit("updateTorrent", torrent);
+            commit("updateTorrents", [torrent]);
           }
           return torrent;
         });
@@ -149,9 +151,9 @@ store.dispatch("getTorrents");
 
 browser.runtime.onMessage.addListener(message => {
   switch (message.event) {
-    case TorrentServerEvents.TorrentAdded:
-    case TorrentServerEvents.TorrentChanged:
-      store.commit("updateTorrent", message.data);
+    case TorrentServerEvents.TorrentsAdded:
+    case TorrentServerEvents.TorrentsChanged:
+      store.commit("updateTorrents", message.data);
       break;
     case TorrentServerEvents.TorrentRemoved:
       store.commit("removeTorrent", message.data);
