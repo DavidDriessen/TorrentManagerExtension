@@ -97,6 +97,9 @@ export abstract class TorrentServer extends EventEmitter {
   protected categories: {
     [key: string]: { name: string; savePath: string };
   } = {};
+  public trackers: {
+    [key: string]: string[];
+  } = {};
   public errorCode: TorrentServerError = TorrentServerError.NoError;
 
   constructor(settings: ServerSettings) {

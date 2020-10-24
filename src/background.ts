@@ -16,6 +16,8 @@ browser.runtime.onMessage.addListener(request => {
       return Promise.resolve(
         serverManager.getTorrents().map((t: Torrent) => t.toObject())
       );
+    case "getTrackers":
+      return Promise.resolve(serverManager.getTrackers());
     case "getCategories":
       return Promise.resolve(serverManager.getCategories());
     case "loadTorrent":

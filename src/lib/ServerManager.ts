@@ -3,8 +3,8 @@ import TorrentServer, {
   TorrentServerError,
   TorrentServerEvents
 } from "@/lib/abstract/TorrentServer";
-import { QbitTorrentServer } from "@/lib/serverTypes/qbitTorrentServer";
-import { Torrent } from "@/lib/abstract/Torrent";
+import {QbitTorrentServer} from "@/lib/serverTypes/qbitTorrentServer";
+import {Torrent} from "@/lib/abstract/Torrent";
 
 export interface Notify {
   downloading: boolean;
@@ -16,7 +16,7 @@ export class ServerManager {
   private notifications: Notify = {} as Notify;
 
   constructor() {
-    browser.storage.sync.get("servers").then(({ servers }) => {
+    browser.storage.sync.get("servers").then(({servers}) => {
       for (const settings of servers) {
         switch (settings.type) {
           case ServerType.Qbit:
@@ -25,7 +25,7 @@ export class ServerManager {
       }
       this.update();
     });
-    browser.storage.sync.get("notify").then(({ notify }) => {
+    browser.storage.sync.get("notify").then(({notify}) => {
       this.notifications = notify as Notify;
     });
   }
@@ -65,46 +65,50 @@ export class ServerManager {
           message: event.data.name
         });
     });
-    server.on(TorrentServerEvents.TorrentChanged, ({ data }) => {
+    server.on(TorrentServerEvents.TorrentChanged, ({data}) => {
       browser.runtime
         .sendMessage({
           event: TorrentServerEvents.TorrentChanged,
           data: data.toObject()
         })
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        .catch(() => {});
+        .catch(() => {
+        });
     });
-    server.on(TorrentServerEvents.TorrentAdded, ({ data }) => {
+    server.on(TorrentServerEvents.TorrentAdded, ({data}) => {
       browser.runtime
         .sendMessage({
           event: TorrentServerEvents.TorrentAdded,
           data: data.toObject()
         })
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        .catch(() => {});
+        .catch(() => {
+        });
     });
     server.on(
       TorrentServerEvents.TorrentRemoved,
-      ({ data }: { data: Torrent }) => {
+      ({data}: { data: Torrent }) => {
         browser.runtime
           .sendMessage({
             event: TorrentServerEvents.TorrentRemoved,
             data: data.toObject()
           })
           // eslint-disable-next-line @typescript-eslint/no-empty-function
-          .catch(() => {});
+          .catch(() => {
+          });
       }
     );
     server.on(
       TorrentServerEvents.StateChanged,
-      ({ data }: { data: TorrentServer }) => {
+      ({data}: { data: TorrentServer }) => {
         browser.runtime
           .sendMessage({
             event: TorrentServerEvents.TorrentRemoved,
-            data: { id: data.id, name: data.name, state: data.getState() }
+            data: {id: data.id, name: data.name, state: data.getState()}
           })
           // eslint-disable-next-line @typescript-eslint/no-empty-function
-          .catch(() => {});
+          .catch(() => {
+          });
       }
     );
     this.servers.push(server);
@@ -120,5 +124,23 @@ export class ServerManager {
 
   getCategories() {
     return ([] as string[]).concat(...this.servers.map(m => m.getCategories()));
+  }
+
+  getTrackers() {
+    const trackers = {} as { [key: string]: { serverId: string, torrentHash: string }[] };
+    for (const server of this.servers) {
+      for (const [tracker, hashes] of Object.entries(server.trackers)) {
+        if (trackers[tracker]) {
+          trackers[tracker] = trackers[tracker].concat(...hashes.map((h) => {
+            return {serverId: server.id, torrentHash: h};
+          }));
+        } else {
+          trackers[tracker] = hashes.map((h) => {
+            return {serverId: server.id, torrentHash: h};
+          });
+        }
+      }
+    }
+    return trackers;
   }
 }

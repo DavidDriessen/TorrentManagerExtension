@@ -33,6 +33,7 @@ export class QbitTorrentServer extends TorrentServer {
         if (response.data.full_update) {
           this.torrents = {};
           this.categories = {};
+          this.trackers = {};
         }
         if (response.data.torrents) {
           for (const hash of Object.keys(response.data.torrents)) {
@@ -86,6 +87,14 @@ export class QbitTorrentServer extends TorrentServer {
         if (response.data.categories_removed)
           for (let i = 0; i < response.data.categories_removed.length; i++) {
             delete this.categories[response.data.categories_removed[i]];
+          }
+        if (response.data.trackers)
+          for (const name of Object.keys(response.data.trackers)) {
+            this.trackers[name] = response.data.trackers[name];
+          }
+        if (response.data.trackers_removed)
+          for (let i = 0; i < response.data.trackers_removed.length; i++) {
+            delete this.trackers[response.data.trackers_removed[i]];
           }
         if (response.data.server_state) {
           for (const param of Object.keys(response.data.server_state)) {

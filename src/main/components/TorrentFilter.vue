@@ -62,7 +62,7 @@ import { TorrentState } from "@/lib/abstract/Torrent";
 
 export interface TorrentFilterType {
   state: string[];
-  tracker: string[];
+  tracker: { serverId: string; torrentHash: string }[][];
   category: string[];
 }
 
@@ -78,7 +78,10 @@ export default class TorrentFilter extends Vue {
   };
 
   get trackers() {
-    return this.$store.getters.trackers;
+    if (!this.$store.getters.trackers) return [];
+    return Object.entries(this.$store.getters.trackers).map(([key, value]) => {
+      return { text: key, value };
+    });
   }
 
   get categories() {

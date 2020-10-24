@@ -1,7 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
-import { Torrent, TorrentTracker } from "@/lib/abstract/Torrent";
-import { ServerState, TorrentServerEvents } from "@/lib/abstract/TorrentServer";
+import {Torrent} from "@/lib/abstract/Torrent";
+import {ServerState, TorrentServerEvents} from "@/lib/abstract/TorrentServer";
 
 Vue.use(Vuex);
 
@@ -10,7 +10,7 @@ const store = new Vuex.Store({
     servers: [] as { id: string; name: string; state: ServerState }[],
     categories: [] as { name: string; savePath: string }[],
     torrents: [] as Torrent[],
-    trackers: [] as string[]
+    trackers: {} as { [key: string]: {serverId: string, torrentHash: string}[] }
   },
   mutations: {
     setTorrents(state, torrents) {
@@ -18,6 +18,9 @@ const store = new Vuex.Store({
     },
     setCategories(state, categories) {
       state.categories = categories;
+    },
+    setTrackers(state, trackers) {
+      state.trackers = trackers;
     },
     setServers(state, servers) {
       state.servers = servers;
@@ -34,6 +37,11 @@ const store = new Vuex.Store({
         state.torrents.push(torrent);
       }
     },
+    updateTrackers(state, trackers) {
+      for (const param of Object.keys(trackers)) {
+        Vue.set(state.trackers, param, trackers[param]);
+      }
+    },
     updateServer(state, server) {
       const index = state.servers.findIndex(s => s.id == server.id);
       if (index >= 0) {
@@ -42,35 +50,6 @@ const store = new Vuex.Store({
         }
       } else {
         state.servers.push(server);
-      }
-    },
-    updateTrackerList(state, trackers) {
-      if (trackers) {
-        trackers = trackers
-          .map((t: TorrentTracker) => t.url)
-          .filter((t: string) => {
-            return !t.startsWith("*");
-          })
-          .map((url: string) => {
-            let hostname;
-            //find & remove protocol (http, ftp, etc.) and get hostname
-
-            if (url.indexOf("//") > -1) {
-              hostname = url.split("/")[2];
-            } else {
-              hostname = url.split("/")[0];
-            }
-            //find & remove port number
-            hostname = hostname.split(":")[0];
-            //find & remove "?"
-            hostname = hostname.split("?")[0];
-            return hostname;
-          });
-        // Unique
-        for (let i = 0; i < trackers.length; ++i) {
-          if (state.trackers.indexOf(trackers[i]) === -1)
-            state.trackers.push(trackers[i]);
-        }
       }
     },
     removeTorrent(state, torrent) {
@@ -83,57 +62,59 @@ const store = new Vuex.Store({
     }
   },
   actions: {
-    getTorrents({ commit }) {
+    getTorrents({commit}) {
       return browser.runtime
-        .sendMessage({ action: "getTorrents" })
+        .sendMessage({action: "getTorrents"})
         .then((torrents: Torrent[]) => {
           commit("setTorrents", torrents);
-          for (const torrent of torrents) {
-            commit("updateTrackerList", torrent.trackers);
-          }
         });
     },
-    getServers({ commit }) {
+    getTrackers({commit}) {
       return browser.runtime
-        .sendMessage({ action: "getServers" })
+        .sendMessage({action: "getTrackers"})
+        .then((trackers: {[key: string]: string[]}) => {
+          commit("setTrackers", trackers);
+        });
+    },
+    getServers({commit}) {
+      return browser.runtime
+        .sendMessage({action: "getServers"})
         .then((servers: { id: string; name: string; state: ServerState }[]) => {
           commit("setServers", servers);
         });
     },
-    getCategories({ commit }) {
+    getCategories({commit}) {
       return browser.runtime
-        .sendMessage({ action: "getCategories" })
+        .sendMessage({action: "getCategories"})
         .then(categories => {
           commit("setCategories", categories);
         });
     },
-    loadTorrent({ commit }, torrent) {
+    loadTorrent({commit}, torrent) {
       return browser.runtime
-        .sendMessage({ action: "loadTorrent", torrent })
+        .sendMessage({action: "loadTorrent", torrent})
         .then((torrent: Torrent) => {
           if (torrent) {
             commit("updateTorrent", torrent);
-            commit("updateTrackerList", torrent.trackers);
           }
           return torrent;
         });
     },
-    loadTrackers({ commit }, torrent) {
+    loadTrackers({commit}, torrent) {
       return browser.runtime
-        .sendMessage({ action: "loadTrackers", torrent })
+        .sendMessage({action: "loadTrackers", torrent})
         .then((torrent: Torrent) => {
           if (torrent) {
             commit("updateTorrent", torrent);
-            commit("updateTrackerList", torrent.trackers);
           }
           return torrent;
         });
     },
     deleteTorrents(_context, data) {
-      return browser.runtime.sendMessage({ action: "deleteTorrents", data });
+      return browser.runtime.sendMessage({action: "deleteTorrents", data});
     },
     pauseTorrents(_context, torrents) {
-      return browser.runtime.sendMessage({ action: "pauseTorrents", torrents });
+      return browser.runtime.sendMessage({action: "pauseTorrents", torrents});
     },
     resumeTorrents(_context, torrents) {
       return browser.runtime.sendMessage({
@@ -142,7 +123,7 @@ const store = new Vuex.Store({
       });
     },
     setFilePriority(_context, data) {
-      return browser.runtime.sendMessage({ action: "setFilePriority", data });
+      return browser.runtime.sendMessage({action: "setFilePriority", data});
     }
   },
   getters: {
@@ -161,9 +142,10 @@ const store = new Vuex.Store({
 
 export default store;
 
-store.dispatch("getTorrents");
-store.dispatch("getCategories");
 store.dispatch("getServers");
+store.dispatch("getCategories");
+store.dispatch("getTrackers");
+store.dispatch("getTorrents");
 
 browser.runtime.onMessage.addListener(message => {
   switch (message.event) {
