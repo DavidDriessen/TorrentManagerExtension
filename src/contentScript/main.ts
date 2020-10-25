@@ -6,13 +6,6 @@ browser.storage.sync.get("links").then(data => {
   if (data.links) links = data.links;
 });
 
-browser.runtime.onMessage.addListener(request => {
-  switch (request.action) {
-    case "saveSettings":
-      links = request.data.links;
-  }
-});
-
 function checkLink(link: string) {
   for (const l of links) {
     if (l.url && link.startsWith(l.url)) return true;

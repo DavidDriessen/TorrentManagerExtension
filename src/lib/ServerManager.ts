@@ -18,7 +18,7 @@ export class ServerManager {
 
   constructor() {
     browser.storage.sync.get("servers").then(({ servers }) => {
-      if(servers) {
+      if (servers) {
         for (const settings of servers) {
           this.addServer(this.parseServer(settings));
         }

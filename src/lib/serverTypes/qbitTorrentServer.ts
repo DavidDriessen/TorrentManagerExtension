@@ -3,7 +3,7 @@ import TorrentServer, {
   TorrentServerEvents,
   Versions
 } from "@/lib/abstract/TorrentServer";
-import {Torrent, TorrentFile, TorrentState} from "@/lib/abstract/Torrent";
+import { Torrent, TorrentFile, TorrentState } from "@/lib/abstract/Torrent";
 
 export class QbitTorrentServer extends TorrentServer {
   private rid = 0;
@@ -11,15 +11,16 @@ export class QbitTorrentServer extends TorrentServer {
   login(username: string, password: string) {
     return this.connection
       .get("/api/v2/auth/login", {
-        params: {username, password}
+        params: { username, password }
       })
       .then(response => {
         if (response.data == "Fails.") {
           response.status = 401;
-          return Promise.reject({response});
+          return Promise.reject({ response });
         }
         return response;
-      }).catch((error) => {
+      })
+      .catch(error => {
         if (error.response) {
           switch (error.response.status) {
             case 401:
@@ -38,7 +39,7 @@ export class QbitTorrentServer extends TorrentServer {
 
   update() {
     return this.connection
-      .get("/api/v2/sync/maindata", {params: {rid: this.rid}})
+      .get("/api/v2/sync/maindata", { params: { rid: this.rid } })
       .then(response => {
         this.rid = response.data.rid;
         if (response.data.full_update) {
@@ -206,7 +207,7 @@ export class QbitTorrentServer extends TorrentServer {
   getTrackers(hash: string) {
     return this.connection
       .get("/api/v2/torrents/trackers", {
-        params: {hash: hash}
+        params: { hash: hash }
       })
       .then(response => response.data);
   }
@@ -214,7 +215,7 @@ export class QbitTorrentServer extends TorrentServer {
   getDetails(hash: string) {
     return this.connection
       .get("/api/v2/torrents/properties", {
-        params: {hash: hash}
+        params: { hash: hash }
       })
       .then(response => response.data);
   }
@@ -222,7 +223,7 @@ export class QbitTorrentServer extends TorrentServer {
   getFiles(hash: string) {
     return this.connection
       .get("/api/v2/torrents/files", {
-        params: {hash: hash}
+        params: { hash: hash }
       })
       .then(response =>
         response.data.map((f: TorrentFile, k: number) => {
@@ -243,7 +244,7 @@ export class QbitTorrentServer extends TorrentServer {
   getWebSeeds(hash: string) {
     return this.connection
       .get("/api/v2/torrents/webseeds", {
-        params: {hash: hash}
+        params: { hash: hash }
       })
       .then(response => response.data);
   }
