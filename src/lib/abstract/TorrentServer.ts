@@ -91,6 +91,7 @@ export interface Versions {
 export abstract class TorrentServer extends EventEmitter {
   readonly id: string;
   readonly name: string;
+  private settings: ServerSettings;
   protected connection: AxiosInstance;
   protected state: ServerState = {} as ServerState;
   protected torrents: { [key: string]: Torrent } = {};
@@ -110,8 +111,12 @@ export abstract class TorrentServer extends EventEmitter {
         .toString(36)
         .substr(2, 9);
     this.name = settings.name;
+    this.settings = settings;
     this.connection = axios.create({ baseURL: settings.host as string });
     ConcurrencyManager(this.connection, 1000);
+  }
+
+  activateHandlers() {
     this.connection.interceptors.response.use(
       response => {
         return response;
@@ -132,12 +137,13 @@ export abstract class TorrentServer extends EventEmitter {
                   });
                 } else {
                   this.errorCode = TorrentServerError.AuthError;
-                  return this.login(settings.username, settings.password).then(
-                    () => {
-                      this.errorCode = TorrentServerError.NoError;
-                      return this.connection.request(error.config);
-                    }
-                  );
+                  return this.login(
+                    this.settings.username,
+                    this.settings.password
+                  ).then(() => {
+                    this.errorCode = TorrentServerError.NoError;
+                    return this.connection.request(error.config);
+                  });
                 }
             }
           }

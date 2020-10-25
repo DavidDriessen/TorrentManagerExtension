@@ -14,7 +14,7 @@ module.exports = {
     standalone: {
       template: "public/browser-extension.html",
       entry: "src/main/main.ts",
-      title: "Standalone",
+      title: "QbitTorrent client",
       filename: "index.html"
     }
   },

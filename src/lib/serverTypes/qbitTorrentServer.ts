@@ -15,9 +15,20 @@ export class QbitTorrentServer extends TorrentServer {
       })
       .then(response => {
         if (response.data == "Fails.") {
-          return Promise.reject(response);
+          response.status = 401;
+          return Promise.reject({response});
         }
         return response;
+      }).catch((error) => {
+        if (error.response) {
+          switch (error.response.status) {
+            case 401:
+              return Promise.reject("Invalid user credentials.");
+            case 403:
+              return Promise.reject("IP banned.");
+          }
+        }
+        return Promise.reject("Invalid host name or port.");
       });
   }
 
@@ -36,8 +47,8 @@ export class QbitTorrentServer extends TorrentServer {
           this.trackers = {};
         }
         if (response.data.torrents) {
-          let updated = [];
-          let added = [];
+          const updated = [];
+          const added = [];
           for (const hash of Object.keys(response.data.torrents)) {
             if (this.torrents[hash]) {
               if (

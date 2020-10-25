@@ -14,6 +14,8 @@
       </div>
 
       <v-spacer />
+      <v-btn @click="reload" text>Reload extension</v-btn>
+      <v-spacer />
       <v-btn @click="open" text>Open</v-btn>
     </v-app-bar>
     <v-main>
@@ -86,6 +88,10 @@ export default class QBitTorrentPopup extends Vue {
 
   open() {
     browser.tabs.create({ url: this.link });
+  }
+
+  reload() {
+    browser.runtime.reload();
   }
 }
 </script>

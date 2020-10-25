@@ -4,7 +4,8 @@
       <v-toolbar>
         <v-toolbar-title>Extension options</v-toolbar-title>
         <v-spacer />
-        <v-btn color="primary" @click="save">Save</v-btn>
+        <v-alert type="error" elevation="3" v-if="error">{{ error }}</v-alert>
+        <v-btn color="primary" @click="save" :loading="loading">Save</v-btn>
       </v-toolbar>
       <v-card-text>
         <v-row>
@@ -175,6 +176,8 @@ export default class Options extends Vue {
     }
   };
   types: ServerType[] = [];
+  loading = false;
+  error = "";
 
   mounted() {
     this.types = Object.values(ServerType);
@@ -218,6 +221,8 @@ export default class Options extends Vue {
   }
 
   save() {
+    this.loading = true;
+    this.error = "";
     const data: {
       servers: ServerSettings[];
       links: TorrentLink[];
@@ -228,14 +233,28 @@ export default class Options extends Vue {
       notify: this.form.notify
     };
     data.servers = this.form.servers.map(s => {
-      s.host = (s.host as URL).toString();
-      return s;
+      return {
+        name: s.name,
+        type: s.type,
+        host: (s.host as URL).toString(),
+        username: s.username,
+        password: s.password
+      };
     });
-    browser.storage.sync.set(data).then(() => {
-      // Notify that we saved.
-      alert("Settings saved");
-      browser.runtime.reload();
-    });
+    browser.runtime
+      .sendMessage({ action: "saveSettings", data })
+      .then(error => {
+        this.loading = false;
+        if (error) {
+          this.error = error;
+        } else {
+          this.$store.dispatch("getServers");
+          this.$store.dispatch("getCategories");
+          this.$store.dispatch("getTrackers");
+          this.$store.dispatch("getTorrents");
+          this.$router.push({ name: "Torrents" });
+        }
+      });
   }
 }
 </script>

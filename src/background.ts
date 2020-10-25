@@ -6,6 +6,18 @@ const serverManager = new ServerManager();
 
 browser.runtime.onMessage.addListener(request => {
   switch (request.action) {
+    case "saveSettings":
+      return new Promise((resolve) => {
+        serverManager.verifyServers(request.data.servers).then(result => {
+          if (!result) {
+            browser.storage.sync.set(request.data).then(() => {
+              resolve();
+            });
+          } else {
+            resolve(result);
+          }
+        });
+      });
     case "getServers":
       return Promise.resolve(
         serverManager.getServers().map(s => {
