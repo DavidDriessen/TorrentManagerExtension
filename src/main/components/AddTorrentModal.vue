@@ -112,6 +112,7 @@ export default class AddTorrentModal extends Vue {
   get categories() {
     if (this.server) {
       return [
+        "",
         ...new Set(
           this.$store.getters.categories
             .filter((c: { serverId: string }) => c.serverId == this.server?.id)
@@ -129,14 +130,19 @@ export default class AddTorrentModal extends Vue {
       if (this.server) {
         this.loading = true;
         this.error = "";
-        this.server
-          .addTorrent(this.torrentsToAdd, this.options)
+        this.$store
+          .dispatch("addTorrent", {
+            server: this.server,
+            torrents: this.torrentsToAdd,
+            options: this.options
+          })
           .then(() => {
             this.dialog = false;
             this.loading = false;
             this.torrentsToAdd = [];
           })
           .catch(e => {
+            console.log(e);
             if (e.response.status == 415) {
               this.error = "Torrent is not valid";
             }

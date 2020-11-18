@@ -1,5 +1,5 @@
-import { ServerManager } from "@/lib/ServerManager";
-import { Torrent, TorrentFile } from "@/lib/abstract/Torrent";
+import {ServerManager} from "@/lib/ServerManager";
+import {Torrent, TorrentFile} from "@/lib/abstract/Torrent";
 import groupBy from "lodash/groupBy";
 
 const serverManager = new ServerManager();
@@ -21,7 +21,7 @@ browser.runtime.onMessage.addListener(request => {
     case "getServers":
       return Promise.resolve(
         serverManager.getServers().map(s => {
-          return { id: s.id, name: s.name, state: s.getState() };
+          return {id: s.id, name: s.name, state: s.getState()};
         })
       );
     case "getTorrents":
@@ -142,25 +142,17 @@ browser.runtime.onMessage.addListener(request => {
             .catch(reject);
       });
     case "addTorrent":
-      browser.tabs.create({
-        url: browser.extension.getURL(
-          "index.html#/add/" + encodeURIComponent(request.torrent)
-        )
-      });
+      if (request.data) {
+        const server = serverManager.getServers().find(s => s.id == request.data.server.id);
+        if (server)
+          return server.addTorrent(request.data.torrents, request.data.options);
+
+      } else {
+        browser.tabs.create({
+          url: browser.extension.getURL(
+            "index.html#/add/" + encodeURIComponent(request.torrent)
+          )
+        });
+      }
   }
 });
-
-browser.webRequest.onBeforeSendHeaders.addListener(
-  details => {
-    if (details.requestHeaders)
-      for (let i = 0; i < details.requestHeaders.length; ++i) {
-        if (details.requestHeaders[i].name === "Origin")
-          details.requestHeaders[i].value = details.url;
-      }
-    return {
-      requestHeaders: details.requestHeaders
-    };
-  },
-  { urls: ["*://*/api/v2/torrents/add"] },
-  ["blocking", "requestHeaders"]
-);

@@ -131,6 +131,9 @@ const store = new Vuex.Store({
     },
     setCategory(_context, data) {
       return browser.runtime.sendMessage({ action: "setCategory", data });
+    },
+    addTorrent(_context, data) {
+      return browser.runtime.sendMessage({ action: "addTorrent", data });
     }
   },
   getters: {

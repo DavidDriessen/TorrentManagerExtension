@@ -53,7 +53,7 @@ export default class App extends Vue {
   mounted() {
     if (this.$route.params.newTorrent) {
       ((this.$refs.addTorrent as unknown) as { open(url: string): void }).open(
-        this.$route.params.newTorrent
+        decodeURIComponent(this.$route.params.newTorrent)
       );
     }
   }
