@@ -204,6 +204,20 @@ export class QbitTorrentServer extends TorrentServer {
     });
   }
 
+  setCategory(hash: string[], category: string): Promise<void> {
+    return this.connection.get("/api/v2/torrents/setCategory", {
+      headers: {
+        accept: "text/javascript, text/html, application/xml, text/xml, */*",
+        "accept-language": "nl-NL,nl;q=0.9,en-US;q=0.8,en;q=0.7,cs;q=0.6",
+        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+      },
+      params: {
+        hashes: hash.join("|"),
+        category
+      }
+    });
+  }
+
   getTrackers(hash: string) {
     return this.connection
       .get("/api/v2/torrents/trackers", {

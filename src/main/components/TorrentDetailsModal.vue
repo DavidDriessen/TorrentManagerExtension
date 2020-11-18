@@ -105,6 +105,15 @@
                     outlined
                   />
                 </v-col>
+                <v-col sm="6">
+                  <v-select
+                    label="Category"
+                    :value="torrent.category"
+                    outlined
+                    :items="categories"
+                    @change="changeCategory"
+                  />
+                </v-col>
               </v-row>
               <v-row v-if="details.comment">
                 <v-col cols="12">
@@ -169,8 +178,8 @@
                 'items-per-page-options': [5]
               }"
             >
-              <template v-slot:item.size="{ item }"
-                >{{ item.size | prettyBytes }}
+              <template v-slot:item.size="{ item }">
+                {{ item.size | prettyBytes }}
               </template>
               <template v-slot:item.progress="{ item }">
                 <v-progress-circular
@@ -242,11 +251,30 @@ export default class TorrentDetailsModal extends Vue {
       .fromNow(true);
   }
 
+  get categories() {
+    return [
+      ...new Set(
+        this.$store.getters.categories
+          .filter(
+            (c: { serverId: string }) => c.serverId == this.torrent.server.id
+          )
+          .map((c: { name: string }) => c.name)
+      )
+    ];
+  }
+
   setFilePriority(file: TorrentFile, priority: number) {
     this.$store.dispatch("setFilePriority", {
       torrent: this.torrent,
       files: [file],
       priority
+    });
+  }
+
+  changeCategory(category: string) {
+    this.$store.dispatch("setCategory", {
+      torrent: this.torrent,
+      category
     });
   }
 

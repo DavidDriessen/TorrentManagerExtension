@@ -200,6 +200,10 @@ export class Torrent implements TorrentData {
     return this.server.setFilePriority(this.hash, fileIds, priority);
   }
 
+  setCategory(category: string){
+    return this.server.setCategory([this.hash], category);
+  }
+
   loadTrackers() {
     return this.server.getTrackers(this.hash).then(data => {
       this.trackers = data;

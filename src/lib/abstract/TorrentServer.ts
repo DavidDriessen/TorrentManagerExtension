@@ -207,6 +207,8 @@ export abstract class TorrentServer extends EventEmitter {
     ids: number[],
     priority: number
   ): Promise<void>;
+  
+  abstract setCategory(hash: string[], category: string): Promise<void>;
 
   getState() {
     return this.state;

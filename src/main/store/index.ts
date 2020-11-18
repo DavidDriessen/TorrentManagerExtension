@@ -128,6 +128,9 @@ const store = new Vuex.Store({
     },
     setFilePriority(_context, data) {
       return browser.runtime.sendMessage({ action: "setFilePriority", data });
+    },
+    setCategory(_context, data) {
+      return browser.runtime.sendMessage({ action: "setCategory", data });
     }
   },
   getters: {

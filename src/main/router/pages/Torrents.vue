@@ -143,7 +143,7 @@ export default class Torrents extends Vue {
         (torrent: Torrent) =>
           this.filter.tracker.length == 0 ||
           this.filter.tracker.some(tracker =>
-            tracker.some(
+            tracker.torrents.some(
               t =>
                 t.serverId == torrent.server.id && t.torrentHash == torrent.hash
             )

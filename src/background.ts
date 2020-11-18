@@ -127,6 +127,20 @@ browser.runtime.onMessage.addListener(request => {
             .then(resolve)
             .catch(reject);
       });
+    case "setCategory":
+      return new Promise((resolve, reject) => {
+        const torrent = serverManager
+          .getTorrents()
+          .find(
+            t =>
+              t.server.id == request.data.torrent.server.id &&
+              t.hash == request.data.torrent.hash
+          );
+        if (torrent)
+          torrent.setCategory(request.data.category)
+            .then(resolve)
+            .catch(reject);
+      });
     case "addTorrent":
       browser.tabs.create({
         url: browser.extension.getURL(
