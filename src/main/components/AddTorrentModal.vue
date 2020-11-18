@@ -111,7 +111,13 @@ export default class AddTorrentModal extends Vue {
 
   get categories() {
     if (this.server) {
-      return this.server.getCategories();
+      return [
+        ...new Set(
+          this.$store.getters.categories
+            .filter((c: { serverId: string }) => c.serverId == this.server?.id)
+            .map((c: { name: string }) => c.name)
+        )
+      ];
     }
     return [];
   }

@@ -146,7 +146,7 @@ export class ServerManager {
   }
 
   getCategories() {
-    return ([] as string[]).concat(...this.servers.map(m => m.getCategories()));
+    return ([] as {}[]).concat(...this.servers.map(m => m.getCategories()));
   }
 
   getTrackers() {

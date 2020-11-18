@@ -7,7 +7,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import { TorrentState } from "@/lib/abstract/Torrent";
 
 @Component
-export default class TorrentFilter extends Vue {
+export default class TorrentStateVue extends Vue {
   @Prop() state!: TorrentState;
 
   get icon() {

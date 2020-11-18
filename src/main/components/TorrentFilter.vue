@@ -85,7 +85,11 @@ export default class TorrentFilter extends Vue {
   }
 
   get categories() {
-    return this.$store.getters.categories;
+    return [
+      ...new Set(
+        this.$store.getters.categories.map((c: { name: string }) => c.name)
+      )
+    ];
   }
 
   @Watch("filter", { deep: true })

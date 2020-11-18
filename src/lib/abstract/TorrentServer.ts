@@ -1,6 +1,6 @@
-import axios, { AxiosInstance, AxiosResponse } from "axios";
-import { ConcurrencyManager } from "@/lib/ConcurrencyManager";
-import { EventEmitter } from "@billjs/event-emitter";
+import axios, {AxiosInstance, AxiosResponse} from "axios";
+import {ConcurrencyManager} from "@/lib/ConcurrencyManager";
+import {EventEmitter} from "@billjs/event-emitter";
 import {
   Torrent,
   TorrentDatails,
@@ -35,6 +35,7 @@ export interface ServerSettings {
 
 export interface ServerState {
   [key: string]: string | number | boolean;
+
   alltime_dl: number;
   alltime_ul: number;
   average_time_queue: number;
@@ -96,7 +97,7 @@ export abstract class TorrentServer extends EventEmitter {
   protected state: ServerState = {} as ServerState;
   protected torrents: { [key: string]: Torrent } = {};
   protected categories: {
-    [key: string]: { name: string; savePath: string };
+    [key: string]: { serverId?: string; name: string; savePath: string };
   } = {};
   public trackers: {
     [key: string]: string[];
@@ -112,7 +113,7 @@ export abstract class TorrentServer extends EventEmitter {
         .substr(2, 9);
     this.name = settings.name;
     this.settings = settings;
-    this.connection = axios.create({ baseURL: settings.host as string });
+    this.connection = axios.create({baseURL: settings.host as string});
     ConcurrencyManager(this.connection, 1000);
   }
 
@@ -122,7 +123,7 @@ export abstract class TorrentServer extends EventEmitter {
         return response;
       },
       error => {
-        this.fire("error", { server: this, error });
+        this.fire("error", {server: this, error});
         if (error.config) {
           if (error.response) {
             switch (error.response.status) {
@@ -216,7 +217,10 @@ export abstract class TorrentServer extends EventEmitter {
   }
 
   getCategories() {
-    return Object.keys(this.categories);
+    return Object.values(this.categories).map((c) => {
+      c.serverId = this.id;
+      return c;
+    });
   }
 
   abstract getTrackers(hash: string): Promise<Array<TorrentTracker>>;
