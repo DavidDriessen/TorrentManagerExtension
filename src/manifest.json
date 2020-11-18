@@ -6,9 +6,6 @@
   "default_locale": "en",
   "permissions": [
     "storage",
-    "<all_urls>",
-    "webRequest",
-    "webRequestBlocking",
     "*://*/*",
     "notifications"
   ],
