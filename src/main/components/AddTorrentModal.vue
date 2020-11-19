@@ -10,7 +10,7 @@
         </v-toolbar-title>
       </v-toolbar>
       <v-card-text>
-        <v-form ref="form" @submit.prevent="addTorrent()" lazy-validation>
+        <v-form ref="form" @submit.prevent="addTorrents()" lazy-validation>
           <v-row>
             <v-col>
               <v-select
@@ -50,25 +50,62 @@
             </v-col>
           </v-row>
           <v-row>
+            <v-text-field
+              label="Torrent"
+              required
+              v-model="torrentToAdd"
+              :rules="torrentFieldRulles"
+              :error-messages="torrentFieldError"
+            />
+            <v-btn @click="addTorrent(torrentToAdd)" tile>
+              <v-icon left>fas fa-plus</v-icon>
+              Check
+            </v-btn>
+          </v-row>
+          <v-row>
             <v-col>
-              <v-text-field
-                v-for="(n, key) in nTorrentsToAdd"
-                :key="key"
-                :label="'Torrent ' + n"
-                v-model="torrentsToAdd[key]"
-                required
-                :rules="[
-                  v => {
-                    if (!v) {
-                      return 'Empty';
-                    } else if (v.match(/^(?:http|magnet:|bc:)/)) {
-                      return true;
-                    } else {
-                      return 'Link invalid';
-                    }
-                  }
-                ]"
-              />
+              <v-list>
+                <v-list-item v-for="(t, ti) in torrentsToAdd" :key="ti">
+                  <v-list-item-title v-if="t.info">
+                    {{ t.info.name }}
+                  </v-list-item-title>
+                  <v-list-item-content v-if="!t.info">
+                    {{ t.url }}
+                  </v-list-item-content>
+                  <v-spacer />
+                  <v-dialog v-if="t.info && t.info.files" width="800">
+                    <template v-slot:activator="{ on }">
+                      <v-btn v-on="on" icon>
+                        <v-icon>fas fa-file</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title>
+                        {{ t.info.name }}
+                      </v-card-title>
+                      <v-data-table
+                        :items="t.info.files"
+                        :headers="[
+                          { text: 'File', value: 'name' },
+                          { text: 'Size', value: 'length' }
+                        ]"
+                      >
+                        <template v-slot:item.length="{ item }">
+                          {{ item.length | prettyBytes }}
+                        </template>
+                      </v-data-table>
+                    </v-card>
+                  </v-dialog>
+                  <v-btn
+                    @click="torrentsToAdd.splice(ti, 1)"
+                    :loading="!t.info"
+                    color="red"
+                    icon
+                  >
+                    <v-icon>fas fa-times</v-icon>
+                  </v-btn>
+                </v-list-item>
+              </v-list>
             </v-col>
           </v-row>
           <v-btn type="submit" hidden>Submit</v-btn>
@@ -79,7 +116,7 @@
           {{ error }}
         </v-card-subtitle>
         <v-spacer />
-        <v-btn color="success" @click="addTorrent()" :loading="loading">
+        <v-btn color="success" @click="addTorrents()" :loading="loading">
           Add torrent
         </v-btn>
       </v-card-actions>
@@ -90,20 +127,24 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import TorrentServer, { AddTorrentOptions } from "@/lib/abstract/TorrentServer";
+import ParseTorrent, { Instance } from "parse-torrent";
 
 @Component
 export default class AddTorrentModal extends Vue {
   dialog = false;
-
   loading = false;
 
   server: TorrentServer | null = null;
   options: AddTorrentOptions = { automatic: true };
 
-  torrentsToAdd: string[] = [];
-  nTorrentsToAdd = 1;
+  torrentToAdd = "";
+  torrentsToAdd: { url: string; info?: Instance }[] = [];
 
   error = "";
+  torrentFieldError = "";
+  torrentFieldRulles = [
+    () => this.torrentsToAdd.length > 0 || "Please add/check a torrent"
+  ];
 
   get servers() {
     return this.$store.getters.servers;
@@ -123,7 +164,24 @@ export default class AddTorrentModal extends Vue {
     return [];
   }
 
-  addTorrent() {
+  addTorrent(url: string) {
+    this.torrentFieldError = "";
+    if (this.torrentToAdd == url) {
+      if (url.match(/^(?:http|magnet:|bc:)/)) {
+        this.torrentToAdd = "";
+      } else {
+        this.torrentFieldError = "Link invalid";
+        return;
+      }
+    }
+    const torrentLink: { url: string; info?: Instance } = { url };
+    ParseTorrent.remote(url, (err: Error, info?: Instance) => {
+      Vue.set(torrentLink, "info", info);
+    });
+    this.torrentsToAdd.push(torrentLink);
+  }
+
+  addTorrents() {
     // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
     // @ts-ignore
     if (this.$refs.form.validate()) {
@@ -133,7 +191,7 @@ export default class AddTorrentModal extends Vue {
         this.$store
           .dispatch("addTorrent", {
             server: this.server,
-            torrents: this.torrentsToAdd,
+            torrents: this.torrentsToAdd.map(t => t.url),
             options: this.options
           })
           .then(() => {
@@ -151,8 +209,8 @@ export default class AddTorrentModal extends Vue {
     }
   }
 
-  open(torrent: string) {
-    this.torrentsToAdd.push(torrent);
+  open(url: string) {
+    this.addTorrent(url);
     this.dialog = true;
   }
 }
