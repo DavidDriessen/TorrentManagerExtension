@@ -4,7 +4,7 @@
       <v-btn v-on="on" text>Add torrent</v-btn>
     </template>
     <v-card>
-      <v-toolbar color="primary">
+      <v-toolbar color="primary" dark>
         <v-toolbar-title>
           <span class="headline">Add torrent</span>
         </v-toolbar-title>
