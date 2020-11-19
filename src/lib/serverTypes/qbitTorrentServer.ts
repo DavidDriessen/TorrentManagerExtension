@@ -1,5 +1,6 @@
 import TorrentServer, {
   AddTorrentOptions,
+  ServerPreferences,
   TorrentServerEvents,
   Versions
 } from "@/lib/abstract/TorrentServer";
@@ -137,8 +138,9 @@ export class QbitTorrentServer extends TorrentServer {
         data.append("autoTMM", (!!options.automatic).toString());
         if (!options.automatic && options.savePath)
           data.append("savepath ", options.savePath);
-        this.connection
-          .post("/api/v2/torrents/add", data)
+        // eslint-disable-next-line @typescript-eslint/camelcase
+        this.setPreferences({ web_ui_csrf_protection_enabled: false })
+          .then(() => this.connection.post("/api/v2/torrents/add", data))
           .then(resolve)
           .catch(reject);
       } else reject();
@@ -278,6 +280,18 @@ export class QbitTorrentServer extends TorrentServer {
         openssl: data[2].data.openssl,
         bitness: data[2].data.bitness
       } as Versions;
+    });
+  }
+
+  getPreferences(): Promise<ServerPreferences> {
+    return this.connection
+      .get("/api/v2/app/preferences")
+      .then(response => response.data);
+  }
+
+  setPreferences(preferences: ServerPreferences): Promise<void> {
+    return this.connection.get("/api/v2/app/setPreferences", {
+      params: { json: preferences }
     });
   }
 }
