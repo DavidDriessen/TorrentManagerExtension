@@ -10,7 +10,19 @@
       <v-card-text>
         <v-row>
           <v-col sm="12" md="6">
-            <v-card height="200">
+            <v-card color="primary" height="200">
+              <v-card-title>
+                Links
+                <v-spacer />
+                <v-btn
+                  @click="form.linksEnabled = !form.linksEnabled"
+                  :elevation="1"
+                  rounded
+                  text
+                >
+                  {{ form.linksEnabled ? "disable" : "enable" }}
+                </v-btn>
+              </v-card-title>
               <v-tabs background-color="primary" dark vertical>
                 <v-tab v-for="(link, key) in form.links" :key="key">
                   {{ link.name }}
@@ -164,11 +176,13 @@ import { Notify } from "@/lib/ServerManager";
 @Component
 export default class Options extends Vue {
   form: {
+    linksEnabled: boolean;
     servers: ServerSettings[];
     links: TorrentLink[];
     notify: Notify;
   } = {
     servers: [],
+    linksEnabled: true,
     links: [],
     notify: {
       downloading: true,
@@ -185,6 +199,8 @@ export default class Options extends Vue {
       if (data.notify) this.form.notify = data.notify;
       if (data.links && data.links.length > 0) this.form.links = data.links;
       else this.addLink();
+      if (data.linksEnabled != undefined)
+        this.form.linksEnabled = data.linksEnabled;
       if (data.servers)
         this.form.servers = data.servers.map((s: ServerSettings) => {
           try {
@@ -225,10 +241,12 @@ export default class Options extends Vue {
     this.error = "";
     const data: {
       servers: ServerSettings[];
+      linksEnabled: boolean;
       links: TorrentLink[];
       notify: Notify;
     } = {
       servers: [],
+      linksEnabled: this.form.linksEnabled,
       links: this.form.links,
       notify: this.form.notify
     };

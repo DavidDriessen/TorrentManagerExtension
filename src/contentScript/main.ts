@@ -1,9 +1,11 @@
 import { TorrentLink } from "@/lib/abstract/TorrentServer";
 
 let links: TorrentLink[] = [];
+let enabled: boolean = false;
 
-browser.storage.sync.get("links").then(data => {
+browser.storage.sync.get(["links", "linksEnabled"]).then(data => {
   if (data.links) links = data.links;
+  if (data.linksEnabled != undefined) enabled = data.linksEnabled;
 });
 
 function checkLink(link: string) {
