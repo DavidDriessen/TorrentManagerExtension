@@ -1,5 +1,5 @@
-import {ServerManager} from "@/lib/ServerManager";
-import {Torrent, TorrentFile} from "@/lib/abstract/Torrent";
+import { ServerManager } from "@/lib/ServerManager";
+import { Torrent, TorrentFile } from "@/lib/abstract/Torrent";
 import groupBy from "lodash/groupBy";
 import Tab = browser.tabs.Tab;
 
@@ -22,7 +22,7 @@ browser.runtime.onMessage.addListener(request => {
     case "getServers":
       return Promise.resolve(
         serverManager.getServers().map(s => {
-          return {id: s.id, name: s.name, state: s.getState()};
+          return { id: s.id, name: s.name, state: s.getState() };
         })
       );
     case "getTorrents":
@@ -152,15 +152,28 @@ browser.runtime.onMessage.addListener(request => {
           return server.addTorrent(request.data.torrents, request.data.options);
       } else {
         Promise.all<Tab>(
-          browser.extension.getViews({type: 'tab'})
-            .map(view => new Promise(resolve =>
-              // @ts-ignore
-              view.chrome.tabs.getCurrent((tab: Tab) =>
-                resolve(Object.assign(tab, {url: view.location.href})))))).then(ownTabs => {
-          const tab = ownTabs.find(tab => tab.url && tab.url.includes("index.html"));
+          browser.extension.getViews({ type: "tab" }).map(view => {
+            const browser = ((view as unknown) as {
+              chrome: {
+                tabs: { getCurrent(callback: (tab: Tab) => void): void };
+              };
+            }).chrome;
+            return new Promise(resolve =>
+              browser.tabs.getCurrent((tab: Tab) =>
+                resolve(Object.assign(tab, { url: view.location.href }))
+              )
+            );
+          })
+        ).then(ownTabs => {
+          const tab = ownTabs.find(
+            tab => tab.url && tab.url.includes("index.html")
+          );
           if (tab && tab.id) {
-            browser.runtime.sendMessage({uiAction: 'AddLink', link: request.torrent});
-            browser.tabs.update(tab.id, {active: true});
+            browser.runtime.sendMessage({
+              uiAction: "AddLink",
+              link: request.torrent
+            });
+            browser.tabs.update(tab.id, { active: true });
           } else {
             browser.tabs.create({
               url: browser.extension.getURL(

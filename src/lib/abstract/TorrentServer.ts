@@ -4,7 +4,8 @@ import { EventEmitter } from "@billjs/event-emitter";
 import {
   Torrent,
   TorrentDatails,
-  TorrentFile, TorrentFileDirectory,
+  TorrentFile,
+  TorrentFileDirectory,
   TorrentTracker,
   TorrentWebSeed
 } from "@/lib/abstract/Torrent";
@@ -382,7 +383,9 @@ export abstract class TorrentServer extends EventEmitter {
 
   abstract getDetails(hash: string): Promise<Array<TorrentDatails>>;
 
-  abstract getFiles(hash: string): Promise<Array<TorrentFile | TorrentFileDirectory>>;
+  abstract getFiles(
+    hash: string
+  ): Promise<Array<TorrentFile | TorrentFileDirectory>>;
 
   abstract getWebSeeds(hash: string): Promise<Array<TorrentWebSeed>>;
 

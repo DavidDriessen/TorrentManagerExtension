@@ -4,7 +4,12 @@ import TorrentServer, {
   TorrentServerEvents,
   Versions
 } from "@/lib/abstract/TorrentServer";
-import {Torrent, TorrentFile, TorrentFileDirectory, TorrentState} from "@/lib/abstract/Torrent";
+import {
+  Torrent,
+  TorrentFile,
+  TorrentFileDirectory,
+  TorrentState
+} from "@/lib/abstract/Torrent";
 
 export class QbitTorrentServer extends TorrentServer {
   private rid = 0;
@@ -12,12 +17,12 @@ export class QbitTorrentServer extends TorrentServer {
   login(username: string, password: string) {
     return this.connection
       .get("/api/v2/auth/login", {
-        params: {username, password}
+        params: { username, password }
       })
       .then(response => {
         if (response.data == "Fails.") {
           response.status = 401;
-          return Promise.reject({response});
+          return Promise.reject({ response });
         }
         return response;
       })
@@ -40,7 +45,7 @@ export class QbitTorrentServer extends TorrentServer {
 
   update() {
     return this.connection
-      .get("/api/v2/sync/maindata", {params: {rid: this.rid}})
+      .get("/api/v2/sync/maindata", { params: { rid: this.rid } })
       .then(response => {
         this.rid = response.data.rid;
         if (response.data.full_update) {
@@ -139,7 +144,7 @@ export class QbitTorrentServer extends TorrentServer {
         if (!options.automatic && options.savePath)
           data.append("savepath ", options.savePath);
         // eslint-disable-next-line @typescript-eslint/camelcase
-        this.setPreferences({web_ui_csrf_protection_enabled: false})
+        this.setPreferences({ web_ui_csrf_protection_enabled: false })
           .then(() => this.connection.post("/api/v2/torrents/add", data))
           .then(resolve)
           .catch(reject);
@@ -223,7 +228,7 @@ export class QbitTorrentServer extends TorrentServer {
   getTrackers(hash: string) {
     return this.connection
       .get("/api/v2/torrents/trackers", {
-        params: {hash: hash}
+        params: { hash: hash }
       })
       .then(response => response.data);
   }
@@ -231,7 +236,7 @@ export class QbitTorrentServer extends TorrentServer {
   getDetails(hash: string) {
     return this.connection
       .get("/api/v2/torrents/properties", {
-        params: {hash: hash}
+        params: { hash: hash }
       })
       .then(response => response.data);
   }
@@ -239,22 +244,29 @@ export class QbitTorrentServer extends TorrentServer {
   getFiles(hash: string) {
     return this.connection
       .get("/api/v2/torrents/files", {
-        params: {hash: hash}
+        params: { hash: hash }
       })
       .then(response => {
         const tree: (TorrentFile | TorrentFileDirectory)[] = [];
-        for (const file of response.data.map((f: TorrentFile, id: number)=>Object.assign(f, {id}))) {
+        for (const file of response.data.map((f: TorrentFile, id: number) =>
+          Object.assign(f, { id })
+        )) {
           file.fullPath = file.name;
           const path = file.fullPath.split("/");
           file.name = path.splice(-1)[0];
           let ref = tree;
           for (const p of path) {
-            let tmp = ref.find(c => c.name == p + '/') as TorrentFileDirectory;
+            let tmp = ref.find(c => c.name == p + "/") as TorrentFileDirectory;
             if (!tmp) {
-              tmp = {name: p + '/', files: [], progress: file.progress, size: 0};
+              tmp = {
+                name: p + "/",
+                files: [],
+                progress: file.progress,
+                size: 0
+              };
               ref.push(tmp);
             }
-            tmp.progress = (tmp.progress + file.progress)/2;
+            tmp.progress = (tmp.progress + file.progress) / 2;
             tmp.size += file.size;
             ref = tmp.files;
           }
@@ -267,7 +279,7 @@ export class QbitTorrentServer extends TorrentServer {
   getWebSeeds(hash: string) {
     return this.connection
       .get("/api/v2/torrents/webseeds", {
-        params: {hash: hash}
+        params: { hash: hash }
       })
       .then(response => response.data);
   }
@@ -298,7 +310,7 @@ export class QbitTorrentServer extends TorrentServer {
 
   setPreferences(preferences: ServerPreferences): Promise<void> {
     return this.connection.get("/api/v2/app/setPreferences", {
-      params: {json: preferences}
+      params: { json: preferences }
     });
   }
 }

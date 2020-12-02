@@ -1,7 +1,7 @@
-import {TorrentLink} from "@/lib/abstract/TorrentServer";
+import { TorrentLink } from "@/lib/abstract/TorrentServer";
 
 let links: TorrentLink[] = [];
-let enabled: boolean = true;
+let enabled = true;
 
 browser.storage.sync.get(["links", "linksEnabled"]).then(data => {
   if (data.links) links = data.links;
@@ -21,9 +21,13 @@ document.querySelectorAll("a").forEach(el =>
       // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore
       const link = ev.currentTarget.href;
-      if (link.match(/^(?:magnet:|bc:)/) || link.endsWith('.torrent') || checkLink(link)) {
+      if (
+        link.match(/^(?:magnet:|bc:)/) ||
+        link.endsWith(".torrent") ||
+        checkLink(link)
+      ) {
         ev.preventDefault();
-        browser.runtime.sendMessage({action: "addTorrent", torrent: link});
+        browser.runtime.sendMessage({ action: "addTorrent", torrent: link });
       }
     }
   })

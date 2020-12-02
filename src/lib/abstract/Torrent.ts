@@ -112,7 +112,7 @@ export interface TorrentFileDirectory {
   name: string;
   progress: number;
   size: number;
-  files: TorrentFile[]
+  files: TorrentFile[];
 }
 
 export interface TorrentFile {
