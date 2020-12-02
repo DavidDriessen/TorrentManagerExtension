@@ -146,6 +146,16 @@ export default class AddTorrentModal extends Vue {
     () => this.torrentsToAdd.length > 0 || "Please add/check a torrent"
   ];
 
+  mounted() {
+    browser.runtime.onMessage.addListener(request => {
+      switch (request.uiAction) {
+        case "AddLink":
+          this.dialog = true;
+          this.addTorrent(request.link);
+      }
+    });
+  }
+
   get servers() {
     return this.$store.getters.servers;
   }
@@ -174,6 +184,7 @@ export default class AddTorrentModal extends Vue {
         return;
       }
     }
+    if (this.torrentsToAdd.some(t => t.url == url)) return;
     const torrentLink: { url: string; info?: Instance } = { url };
     ParseTorrent.remote(url, (err: Error, info?: Instance) => {
       Vue.set(torrentLink, "info", info);
