@@ -83,17 +83,9 @@
                       <v-card-title>
                         {{ t.info.name }}
                       </v-card-title>
-                      <v-data-table
-                        :items="t.info.files"
-                        :headers="[
-                          { text: 'File', value: 'name' },
-                          { text: 'Size', value: 'length' }
-                        ]"
-                      >
-                        <template v-slot:item.length="{ item }">
-                          {{ item.length | prettyBytes }}
-                        </template>
-                      </v-data-table>
+                      <v-card-text>
+                        <file-list :files="parsedFiles(t.info.files)" />
+                      </v-card-text>
                     </v-card>
                   </v-dialog>
                   <v-btn
@@ -128,8 +120,12 @@
 import { Component, Vue } from "vue-property-decorator";
 import TorrentServer, { AddTorrentOptions } from "@/lib/abstract/TorrentServer";
 import ParseTorrent, { Instance } from "parse-torrent";
+import FileList from "@/main/components/filetree/FileList.vue";
+import { TorrentFile, TorrentFileDirectory } from "@/lib/abstract/Torrent";
 
-@Component
+@Component({
+  components: { FileList }
+})
 export default class AddTorrentModal extends Vue {
   dialog = false;
   loading = false;
@@ -172,6 +168,26 @@ export default class AddTorrentModal extends Vue {
       ];
     }
     return [];
+  }
+
+  parsedFiles(files: { name: string; path: string; lenght: number }[]) {
+    const tree: (TorrentFile | TorrentFileDirectory)[] = [];
+    for (const file of files) {
+      file.fullPath = file.name;
+      const path = file.fullPath.split("/");
+      file.name = path.splice(-1)[0];
+      let ref = tree;
+      for (const p of path) {
+        let tmp = ref.find(c => c.name == p + "/") as TorrentFileDirectory;
+        if (!tmp) {
+          tmp = { name: p + "/", files: [], progress: 0, size: 0 };
+          ref.push(tmp);
+        }
+        ref = tmp.files;
+      }
+      ref.push(file);
+    }
+    return tree;
   }
 
   addTorrent(url: string) {

@@ -163,53 +163,7 @@
             </v-card-text>
           </v-card>
           <v-card v-if="files" flat>
-            <v-data-table
-              :headers="[
-                { text: 'Name', value: 'name' },
-                { text: 'Priority', value: 'priority', width: '182px' },
-                { text: 'Size', value: 'size', width: '100px' },
-                { text: 'Progress', value: 'progress', width: '50px' }
-              ]"
-              group-by="group"
-              :items="files"
-              :items-per-page="5"
-              :hide-default-footer="files && files.length <= 5"
-              :footer-props="{
-                'items-per-page-options': [5]
-              }"
-            >
-              <template v-slot:item.size="{ item }">
-                {{ item.size | prettyBytes }}
-              </template>
-              <template v-slot:item.progress="{ item }">
-                <v-progress-circular
-                  :size="40"
-                  :value="item.progress * 100"
-                  :width="5"
-                  color="light-blue"
-                  >{{ +(item.progress * 100).toFixed(1) }}
-                </v-progress-circular>
-              </template>
-              <template v-slot:item.priority="{ item }">
-                <v-select
-                  :items="[
-                    { value: 0, text: 'Don\'t download' },
-                    { value: 1, text: 'Normal' },
-                    { value: 6, text: 'High' },
-                    { value: 7, text: 'Max' }
-                  ]"
-                  :value="
-                    item.priority > 0 && item.priority < 6 ? 1 : item.priority
-                  "
-                  @change="setFilePriority(item, $event)"
-                />
-              </template>
-              <template v-slot:no-data>
-                <v-btn color="primary" @click="initialize">
-                  Reset
-                </v-btn>
-              </template>
-            </v-data-table>
+            <file-list :files="files" />
           </v-card>
         </v-tab-item>
       </v-tabs-items>
@@ -232,9 +186,10 @@ import {
 } from "@/lib/abstract/Torrent";
 import DeleteTorrentModal from "@/main/components/DeleteTorrentModal.vue";
 import moment from "moment";
+import FileList from "@/main/components/filetree/FileList.vue";
 
 @Component({
-  components: { DeleteTorrentModal }
+  components: { FileList, DeleteTorrentModal }
 })
 export default class TorrentDetailsModal extends Vue {
   dialog = false;

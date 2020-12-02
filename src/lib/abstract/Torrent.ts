@@ -108,16 +108,23 @@ export interface TorrentTracker {
   url: string;
 }
 
+export interface TorrentFileDirectory {
+  name: string;
+  progress: number;
+  size: number;
+  files: TorrentFile[]
+}
+
 export interface TorrentFile {
   id: number;
   availability: number;
   is_seed: boolean;
   name: string;
+  fullPath: string;
   piece_range: Array<number>;
   priority: number;
   progress: number;
   size: number;
-  group?: string;
 }
 
 export interface TorrentWebSeed {
