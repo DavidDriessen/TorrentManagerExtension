@@ -120,7 +120,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import TorrentServer, { AddTorrentOptions } from "@/lib/abstract/TorrentServer";
 import ParseTorrent, { Instance } from "parse-torrent";
-import FileList from "@/main/components/filetree/FileList.vue";
+import FileList from "@/main/components/FileList.vue";
 import { TorrentFile, TorrentFileDirectory } from "@/lib/abstract/Torrent";
 
 @Component({

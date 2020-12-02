@@ -176,7 +176,7 @@ export class Torrent implements TorrentData {
   public uploaded_session!: number;
   public upspeed!: number;
 
-  files: Array<TorrentFile> | undefined;
+  files: Array<TorrentFile | TorrentFileDirectory> | undefined;
   details: Array<TorrentDatails> | undefined;
   trackers: Array<TorrentTracker> | undefined;
   webSeeds: Array<TorrentWebSeed> | undefined;

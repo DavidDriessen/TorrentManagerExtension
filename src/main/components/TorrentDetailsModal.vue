@@ -163,7 +163,7 @@
             </v-card-text>
           </v-card>
           <v-card v-if="files" flat>
-            <file-list :files="files" />
+            <file-list :torrent="torrent" :files="files" />
           </v-card>
         </v-tab-item>
       </v-tabs-items>
@@ -186,7 +186,7 @@ import {
 } from "@/lib/abstract/Torrent";
 import DeleteTorrentModal from "@/main/components/DeleteTorrentModal.vue";
 import moment from "moment";
-import FileList from "@/main/components/filetree/FileList.vue";
+import FileList from "@/main/components/FileList.vue";
 
 @Component({
   components: { FileList, DeleteTorrentModal }
@@ -216,14 +216,6 @@ export default class TorrentDetailsModal extends Vue {
           .map((c: { name: string }) => c.name)
       )
     ];
-  }
-
-  setFilePriority(file: TorrentFile, priority: number) {
-    this.$store.dispatch("setFilePriority", {
-      torrent: this.torrent,
-      files: [file],
-      priority
-    });
   }
 
   changeCategory(category: string) {

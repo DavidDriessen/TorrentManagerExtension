@@ -243,7 +243,7 @@ export class QbitTorrentServer extends TorrentServer {
       })
       .then(response => {
         const tree: (TorrentFile | TorrentFileDirectory)[] = [];
-        for (const file of response.data) {
+        for (const file of response.data.map((f: TorrentFile, id: number)=>Object.assign(f, {id}))) {
           file.fullPath = file.name;
           const path = file.fullPath.split("/");
           file.name = path.splice(-1)[0];
@@ -251,9 +251,11 @@ export class QbitTorrentServer extends TorrentServer {
           for (const p of path) {
             let tmp = ref.find(c => c.name == p + '/') as TorrentFileDirectory;
             if (!tmp) {
-              tmp = {name: p + '/', files: [], progress: 0, size: 0};
+              tmp = {name: p + '/', files: [], progress: file.progress, size: 0};
               ref.push(tmp);
             }
+            tmp.progress = (tmp.progress + file.progress)/2;
+            tmp.size += file.size;
             ref = tmp.files;
           }
           ref.push(file);

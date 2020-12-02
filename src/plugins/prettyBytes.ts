@@ -5,7 +5,7 @@ export default function(num: number) {
   }
 
   const neg = num < 0;
-  const units = ["B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+  const units = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
 
   if (neg) {
     num = -num;
