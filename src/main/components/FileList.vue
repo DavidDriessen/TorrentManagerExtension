@@ -31,9 +31,13 @@
       </template>
     </template>
     <template v-slot:append="{ leaf, item }">
-      <v-row style="width: 250px;text-align: right">
-        <v-col cols="7" style="padding: 0;">
-          <v-menu v-if="torrent && leaf">
+      <v-row
+        :style="
+          'width: ' + (torrent && leaf ? 250 : 90) + 'px;text-align: right'
+        "
+      >
+        <v-col v-if="torrent && leaf" cols="7" style="padding: 0;">
+          <v-menu>
             <template v-slot:activator="{ on }">
               <div v-on="on">
                 <v-icon small>fas fa-caret-down</v-icon>
@@ -60,7 +64,7 @@
             </v-list>
           </v-menu>
         </v-col>
-        <v-col cols="5" style="padding: 0 20px 0 0;">
+        <v-col :cols="torrent && leaf ? 5 : 12" style="padding: 0 20px 0 0;">
           {{ (item.size || item.length) | prettyBytes }}
         </v-col>
       </v-row>
@@ -70,7 +74,11 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
-import { TorrentFile, TorrentFileDirectory } from "@/lib/abstract/Torrent";
+import {
+  Torrent,
+  TorrentFile,
+  TorrentFileDirectory
+} from "@/lib/abstract/Torrent";
 
 @Component
 export default class FileList extends Vue {

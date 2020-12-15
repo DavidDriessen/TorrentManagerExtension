@@ -170,7 +170,7 @@ export default class AddTorrentModal extends Vue {
     return [];
   }
 
-  parsedFiles(files: { name: string; path: string; lenght: number }[]) {
+  parsedFiles(files: TorrentFile[]) {
     const tree: (TorrentFile | TorrentFileDirectory)[] = [];
     for (const file of files) {
       file.fullPath = file.name;
@@ -180,9 +180,15 @@ export default class AddTorrentModal extends Vue {
       for (const p of path) {
         let tmp = ref.find(c => c.name == p + "/") as TorrentFileDirectory;
         if (!tmp) {
-          tmp = { name: p + "/", files: [], progress: 0, size: 0 };
+          tmp = {
+            name: p + "/",
+            files: [],
+            progress: 0,
+            size: 0
+          } as TorrentFileDirectory;
           ref.push(tmp);
         }
+        tmp.size += file.length;
         ref = tmp.files;
       }
       ref.push(file);
@@ -227,7 +233,6 @@ export default class AddTorrentModal extends Vue {
             this.torrentsToAdd = [];
           })
           .catch(e => {
-            console.log(e);
             if (e.response.status == 415) {
               this.error = "Torrent is not valid";
             }

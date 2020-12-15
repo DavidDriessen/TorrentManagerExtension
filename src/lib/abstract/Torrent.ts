@@ -125,6 +125,7 @@ export interface TorrentFile {
   priority: number;
   progress: number;
   size: number;
+  length: number;
 }
 
 export interface TorrentWebSeed {

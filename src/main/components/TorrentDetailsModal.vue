@@ -182,6 +182,7 @@ import {
   Torrent,
   TorrentDatails,
   TorrentFile,
+  TorrentFileDirectory,
   TorrentTracker
 } from "@/lib/abstract/Torrent";
 import DeleteTorrentModal from "@/main/components/DeleteTorrentModal.vue";
@@ -196,7 +197,7 @@ export default class TorrentDetailsModal extends Vue {
   tab = null;
   loading = false;
   torrent = {} as Torrent;
-  files: TorrentFile[] | null = null;
+  files: (TorrentFile | TorrentFileDirectory)[] | null = null;
   details: TorrentDatails[] | null = null;
   trackers: TorrentTracker[] | null = null;
 
