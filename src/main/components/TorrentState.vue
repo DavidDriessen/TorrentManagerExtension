@@ -16,12 +16,13 @@ export default class TorrentStateVue extends Vue {
       case TorrentState.pausedUP:
         return "pause";
       case TorrentState.metaDL:
-      case TorrentState.queuedDL:
       case TorrentState.checkingDL:
+      case TorrentState.checkingUP:
+        return "cog";
+      case TorrentState.queuedDL:
       case TorrentState.stalledDL:
       case TorrentState.downloading:
         return "download";
-      case TorrentState.checkingUP:
       case TorrentState.queuedUP:
       case TorrentState.stalledUP:
       case TorrentState.uploading:
@@ -35,10 +36,13 @@ export default class TorrentStateVue extends Vue {
   get color() {
     switch (this.state) {
       case TorrentState.Error:
+      case TorrentState.stalledDL:
+      case TorrentState.stalledUP:
         return "red";
-      case TorrentState.queuedUP:
-      case TorrentState.queuedDL:
-        return "yellow";
+      case TorrentState.metaDL:
+      case TorrentState.checkingDL:
+      case TorrentState.checkingUP:
+        return "orange";
       case TorrentState.uploading:
       case TorrentState.downloading:
         return "blue";
