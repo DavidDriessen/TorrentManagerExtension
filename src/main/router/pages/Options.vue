@@ -10,7 +10,7 @@
       <v-card-text>
         <v-row>
           <v-col sm="12" md="6">
-            <v-card color="primary" height="200">
+            <v-card color="primary" height="200" dark>
               <v-card-title>
                 Links
                 <v-spacer />
@@ -117,13 +117,19 @@
                         <v-col>
                           <v-text-field
                             label="Hostname"
-                            v-model="server.host.host"
+                            v-model="server.host.hostname"
                           />
                         </v-col>
                         <v-col cols="3" lg="2">
                           <v-text-field
                             label="Port"
                             v-model="server.host.port"
+                          />
+                        </v-col>
+                        <v-col>
+                          <v-text-field
+                            label="Path"
+                            v-model="server.host.pathname"
                           />
                         </v-col>
                       </v-row>
