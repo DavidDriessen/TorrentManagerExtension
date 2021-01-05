@@ -145,6 +145,9 @@ const store = new Vuex.Store({
     },
     trackers(state) {
       return state.trackers;
+    },
+    torrents(state) {
+      return state.torrents.sort((a, b) => b.added_on - a.added_on);
     }
   },
   modules: {}
