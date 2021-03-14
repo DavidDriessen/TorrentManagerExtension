@@ -71,6 +71,7 @@
                   </v-list-item-title>
                   <v-list-item-content v-if="!t.info">
                     {{ t.url }}
+                    <v-alert color="red" dark dense>{{ t.err }}</v-alert>
                   </v-list-item-content>
                   <v-spacer />
                   <v-dialog v-if="t.info && t.info.files" width="800">
@@ -90,7 +91,7 @@
                   </v-dialog>
                   <v-btn
                     @click="torrentsToAdd.splice(ti, 1)"
-                    :loading="!t.info"
+                    :loading="!t.info && !t.err"
                     color="red"
                     icon
                   >
@@ -209,6 +210,9 @@ export default class AddTorrentModal extends Vue {
     if (this.torrentsToAdd.some(t => t.url == url)) return;
     const torrentLink: { url: string; info?: Instance } = { url };
     ParseTorrent.remote(url, (err: Error, info?: Instance) => {
+      if (err) {
+        torrentLink.err = "No torrent link";
+      }
       Vue.set(torrentLink, "info", info);
     });
     this.torrentsToAdd.push(torrentLink);
