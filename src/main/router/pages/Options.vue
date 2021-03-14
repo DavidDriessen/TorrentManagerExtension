@@ -156,6 +156,7 @@ export default class Options extends Vue {
   addServer(index: number | undefined) {
     if (index == undefined || index > this.servers.length) {
       this.servers.push({
+        name: "Server " + (this.servers.length + 1),
         settings: {
           name: "Server " + (this.servers.length + 1),
           type: ServerType.Qbit,
@@ -167,7 +168,7 @@ export default class Options extends Vue {
     }
   }
 
-  deleteServer(server: ServerSettings) {
+  deleteServer(server: Server) {
     this.mainTab--;
     this.servers = this.servers.filter(s => s !== server);
   }
@@ -196,11 +197,11 @@ export default class Options extends Vue {
     };
     data.servers = this.servers.map(s => {
       return {
-        name: s.name,
-        type: s.type,
-        host: (s.host as URL).toString(),
-        username: s.username,
-        password: s.password
+        name: s.settings.name,
+        type: s.settings.type,
+        host: (s.settings.host as URL).toString(),
+        username: s.settings.username,
+        password: s.settings.password
       };
     });
     browser.runtime
