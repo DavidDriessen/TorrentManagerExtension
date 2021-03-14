@@ -10,8 +10,8 @@
         { text: 'Ratio', value: 'ratio', filterable: false },
         { text: 'State', value: 'state', filterable: false }
       ]"
-      :sort-by="['added_on']"
-      :sort-desc="[true]"
+      :sort-by="sort.by"
+      :sort-desc="sort.desc"
       :multi-sort="true"
       :items="torrents"
       :items-per-page="50"
@@ -124,11 +124,15 @@ import DeleteTorrentModal from "@/main/components/DeleteTorrentModal.vue";
 export default class Torrents extends Vue {
   search = "";
   selected = [];
+  sort = {
+    by: [],
+    desc: []
+  };
 
   filter: TorrentFilterType = { state: [], tracker: [], category: [] };
 
   get torrents() {
-    return this.$store.state.torrents
+    return this.$store.getters.torrents
       .filter(
         (torrent: Torrent) =>
           this.filter.state.length === 0 ||

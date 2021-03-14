@@ -127,7 +127,7 @@ export class ServerManager {
       ({ data }: { data: TorrentServer }) => {
         browser.runtime
           .sendMessage({
-            event: TorrentServerEvents.TorrentRemoved,
+            event: TorrentServerEvents.StateChanged,
             data: { id: data.id, name: data.name, state: data.getState() }
           })
           // eslint-disable-next-line @typescript-eslint/no-empty-function
