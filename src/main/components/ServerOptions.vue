@@ -16,7 +16,7 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col sm="4" cols="5" lg="3">
+          <v-col cols="6" sm="3" lg="2">
             <v-select
               label="Protocol"
               v-model="server.settings.host.protocol"
@@ -26,14 +26,20 @@
               ]"
             />
           </v-col>
-          <v-col>
+          <v-col cols="6" sm="4" lg="4">
             <v-text-field
               label="Hostname"
               v-model="server.settings.host.host"
             />
           </v-col>
-          <v-col cols="3" lg="2">
+          <v-col cols="6" sm="2" lg="2">
             <v-text-field label="Port" v-model="server.settings.host.port" />
+          </v-col>
+          <v-col cols="6" sm="3" lg="4">
+            <v-text-field
+              label="Path"
+              v-model="server.settings.host.pathname"
+            />
           </v-col>
         </v-row>
         <v-row>
@@ -92,7 +98,7 @@ import { ServerType } from "@/lib/abstract/TorrentServer";
 
 @Component
 export default class ServerOptions extends Vue {
-  @Prop() server: Server;
+  @Prop() server!: Server;
   types: ServerType[] = [];
   preferences: {
     upLimit: number;
