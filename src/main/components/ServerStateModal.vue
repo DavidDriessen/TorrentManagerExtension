@@ -64,6 +64,58 @@
                   />
                 </v-col>
               </v-row>
+              <v-row>
+                <v-col>
+                  <v-text-field
+                    label="Downloaded"
+                    :value="server.state.dl_info_data | prettyBytes"
+                    readonly
+                    outlined
+                  />
+                </v-col>
+                <v-col>
+                  <v-text-field
+                    label="Download bandwidth"
+                    :value="server.state.dl_info_speed | prettyBytes('/s')"
+                    readonly
+                    outlined
+                  />
+                </v-col>
+                <v-col>
+                  <v-text-field
+                    label="Download bandwidth limit"
+                    :value="server.state.dl_rate_limit | prettyBytes('/s')"
+                    readonly
+                    outlined
+                  />
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col>
+                  <v-text-field
+                    label="Uploaded"
+                    :value="server.state.up_info_data | prettyBytes"
+                    readonly
+                    outlined
+                  />
+                </v-col>
+                <v-col>
+                  <v-text-field
+                    label="Upload bandwidth"
+                    :value="server.state.up_info_speed | prettyBytes('/s')"
+                    readonly
+                    outlined
+                  />
+                </v-col>
+                <v-col>
+                  <v-text-field
+                    label="Upload bandwidth limit"
+                    :value="server.state.up_rate_limit | prettyBytes('/s')"
+                    readonly
+                    outlined
+                  />
+                </v-col>
+              </v-row>
             </v-card-text>
           </v-card>
         </v-tab-item>
@@ -74,12 +126,13 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import { ServerState } from "@/lib/abstract/TorrentServer";
 
 @Component
 export default class ServerStateModal extends Vue {
   dialog = false;
 
-  get servers() {
+  get servers(): Array<{ state: ServerState }> {
     return this.$store.getters.servers;
   }
 }

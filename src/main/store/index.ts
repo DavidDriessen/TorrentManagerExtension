@@ -1,13 +1,20 @@
 import Vue from "vue";
 import Vuex from "vuex";
-import { Torrent } from "@/lib/abstract/Torrent";
-import { ServerState, TorrentServerEvents } from "@/lib/abstract/TorrentServer";
+import {Torrent} from "@/lib/abstract/Torrent";
+import {ServerSettings, ServerState, TorrentServerEvents} from "@/lib/abstract/TorrentServer";
 
 Vue.use(Vuex);
 
+export interface Server {
+  id?: string;
+  name: string;
+  state: ServerState;
+  settings: ServerSettings
+}
+
 const store = new Vuex.Store({
   state: {
-    servers: [] as { id: string; name: string; state: ServerState }[],
+    servers: [] as Server[],
     categories: [] as { name: string; savePath: string }[],
     torrents: [] as Torrent[],
     trackers: {} as {
@@ -66,37 +73,37 @@ const store = new Vuex.Store({
     }
   },
   actions: {
-    getTorrents({ commit }) {
+    getTorrents({commit}) {
       return browser.runtime
-        .sendMessage({ action: "getTorrents" })
+        .sendMessage({action: "getTorrents"})
         .then((torrents: Torrent[]) => {
           commit("setTorrents", torrents);
         });
     },
-    getTrackers({ commit }) {
+    getTrackers({commit}) {
       return browser.runtime
-        .sendMessage({ action: "getTrackers" })
+        .sendMessage({action: "getTrackers"})
         .then((trackers: { [key: string]: string[] }) => {
           commit("setTrackers", trackers);
         });
     },
-    getServers({ commit }) {
+    getServers({commit}) {
       return browser.runtime
-        .sendMessage({ action: "getServers" })
+        .sendMessage({action: "getServers"})
         .then((servers: { id: string; name: string; state: ServerState }[]) => {
           commit("setServers", servers);
         });
     },
-    getCategories({ commit }) {
+    getCategories({commit}) {
       return browser.runtime
-        .sendMessage({ action: "getCategories" })
+        .sendMessage({action: "getCategories"})
         .then(categories => {
           commit("setCategories", categories);
         });
     },
-    loadTorrent({ commit }, torrent) {
+    loadTorrent({commit}, torrent) {
       return browser.runtime
-        .sendMessage({ action: "loadTorrent", torrent })
+        .sendMessage({action: "loadTorrent", torrent})
         .then((torrent: Torrent) => {
           if (torrent) {
             commit("updateTorrents", [torrent]);
@@ -104,9 +111,9 @@ const store = new Vuex.Store({
           return torrent;
         });
     },
-    loadTrackers({ commit }, torrent) {
+    loadTrackers({commit}, torrent) {
       return browser.runtime
-        .sendMessage({ action: "loadTrackers", torrent })
+        .sendMessage({action: "loadTrackers", torrent})
         .then((torrent: Torrent) => {
           if (torrent) {
             commit("updateTorrents", [torrent]);
@@ -115,10 +122,10 @@ const store = new Vuex.Store({
         });
     },
     deleteTorrents(_context, data) {
-      return browser.runtime.sendMessage({ action: "deleteTorrents", data });
+      return browser.runtime.sendMessage({action: "deleteTorrents", data});
     },
     pauseTorrents(_context, torrents) {
-      return browser.runtime.sendMessage({ action: "pauseTorrents", torrents });
+      return browser.runtime.sendMessage({action: "pauseTorrents", torrents});
     },
     resumeTorrents(_context, torrents) {
       return browser.runtime.sendMessage({
@@ -127,13 +134,13 @@ const store = new Vuex.Store({
       });
     },
     setFilePriority(_context, data) {
-      return browser.runtime.sendMessage({ action: "setFilePriority", data });
+      return browser.runtime.sendMessage({action: "setFilePriority", data});
     },
     setCategory(_context, data) {
-      return browser.runtime.sendMessage({ action: "setCategory", data });
+      return browser.runtime.sendMessage({action: "setCategory", data});
     },
     addTorrent(_context, data) {
-      return browser.runtime.sendMessage({ action: "addTorrent", data });
+      return browser.runtime.sendMessage({action: "addTorrent", data});
     }
   },
   getters: {

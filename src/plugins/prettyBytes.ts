@@ -1,4 +1,4 @@
-export default function(num: number) {
+export default function(num: number, suffix = "") {
   // jacked from: https://github.com/sindresorhus/pretty-bytes
   if (isNaN(num)) {
     return num;
@@ -24,5 +24,5 @@ export default function(num: number) {
   // @ts-ignore
   num = num.toFixed(2) * 1;
 
-  return (neg ? "-" : "") + num + " " + units[exponent];
+  return (neg ? "-" : "") + num + " " + units[exponent] + suffix;
 }

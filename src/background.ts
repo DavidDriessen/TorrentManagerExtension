@@ -22,7 +22,7 @@ browser.runtime.onMessage.addListener(request => {
     case "getServers":
       return Promise.resolve(
         serverManager.getServers().map(s => {
-          return { id: s.id, name: s.name, state: s.getState() };
+          return { id: s.id, name: s.name, state: s.getState(), settings: s.getSettings() };
         })
       );
     case "getTorrents":
