@@ -2,8 +2,38 @@ import { ServerManager } from "@/lib/ServerManager";
 import { Torrent, TorrentFile } from "@/lib/abstract/Torrent";
 import groupBy from "lodash/groupBy";
 import Tab = browser.tabs.Tab;
+import OnClickData = browser.contextMenus.OnClickData;
 
 const serverManager = new ServerManager();
+
+function openAddTorrentDialog(link: string) {
+  return Promise.all<Tab>(
+    browser.extension.getViews({ type: "tab" }).map(view => {
+      const browser = ((view as unknown) as {
+        chrome: {
+          tabs: { getCurrent(callback: (tab: Tab) => void): void };
+        };
+      }).chrome;
+      return new Promise(resolve =>
+        browser.tabs.getCurrent((tab: Tab) =>
+          resolve(Object.assign(tab, { url: view.location.href }))
+        )
+      );
+    })
+  ).then(ownTabs => {
+    const tab = ownTabs.find(tab => tab.url && tab.url.includes("index.html"));
+    if (tab && tab.id) {
+      browser.runtime.sendMessage({ uiAction: "AddLink", link });
+      browser.tabs.update(tab.id, { active: true });
+    } else {
+      browser.tabs.create({
+        url: browser.extension.getURL(
+          "index.html#/add/" + encodeURIComponent(link)
+        )
+      });
+    }
+  });
+}
 
 browser.runtime.onMessage.addListener(request => {
   switch (request.action) {
@@ -156,37 +186,14 @@ browser.runtime.onMessage.addListener(request => {
         if (server)
           return server.addTorrent(request.data.torrents, request.data.options);
       } else {
-        Promise.all<Tab>(
-          browser.extension.getViews({ type: "tab" }).map(view => {
-            const browser = ((view as unknown) as {
-              chrome: {
-                tabs: { getCurrent(callback: (tab: Tab) => void): void };
-              };
-            }).chrome;
-            return new Promise(resolve =>
-              browser.tabs.getCurrent((tab: Tab) =>
-                resolve(Object.assign(tab, { url: view.location.href }))
-              )
-            );
-          })
-        ).then(ownTabs => {
-          const tab = ownTabs.find(
-            tab => tab.url && tab.url.includes("index.html")
-          );
-          if (tab && tab.id) {
-            browser.runtime.sendMessage({
-              uiAction: "AddLink",
-              link: request.torrent
-            });
-            browser.tabs.update(tab.id, { active: true });
-          } else {
-            browser.tabs.create({
-              url: browser.extension.getURL(
-                "index.html#/add/" + encodeURIComponent(request.torrent)
-              )
-            });
-          }
-        });
+        return openAddTorrentDialog(request.torrent);
       }
   }
+});
+
+browser.contextMenus.create({
+  id: "add_torrent",
+  title: "Add torrent",
+  contexts: ["link"],
+  onclick: (info: OnClickData) => openAddTorrentDialog(info.linkUrl || "")
 });
