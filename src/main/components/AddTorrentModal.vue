@@ -208,7 +208,7 @@ export default class AddTorrentModal extends Vue {
       }
     }
     if (this.torrentsToAdd.some(t => t.url == url)) return;
-    const torrentLink: { url: string; info?: Instance } = { url };
+    const torrentLink: { url: string; info?: Instance; err?: string } = { url };
     ParseTorrent.remote(url, (err: Error, info?: Instance) => {
       if (err) {
         torrentLink.err = "No torrent link";
